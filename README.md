@@ -11,6 +11,11 @@ Crash documentation for patrol officers. Made by Circuit Mandate · circuitmanda
    **Allow from this source**, then go back and tap **Install**.
 4. Open **Road Dog**.
 
+**Samsung phones:** if you see "Unknown app blocked" (Auto Blocker), go to
+**Settings → Security and privacy → Auto Blocker**, turn it **off**, install the app,
+then turn Auto Blocker back on. Road Dog keeps working with it on, but you'll need
+to turn it off again for each update.
+
 Current build: **20**
 
 ## Updating
