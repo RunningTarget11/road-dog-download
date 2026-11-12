@@ -5,11 +5,13 @@ Crash documentation for patrol officers. Made by Circuit Mandate · circuitmanda
 ## Install (Android)
 
 1. On your Android phone, open this link in Chrome:
-   **https://github.com/RunningTarget11/road-dog-download/releases/latest/download/RoadDog-latest.apk**
+   **https://github.com/RunningTarget11/road-dog-download/raw/main/RoadDog-latest.apk**
 2. When the download finishes, tap it (or open it from Chrome's Downloads).
 3. If Android says installs from Chrome aren't allowed, tap **Settings**, turn on
    **Allow from this source**, then go back and tap **Install**.
 4. Open **Road Dog**.
+
+Current build: **19**
 
 ## Updating
 
