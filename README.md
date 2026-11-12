@@ -11,7 +11,7 @@ Crash documentation for patrol officers. Made by Circuit Mandate · circuitmanda
    **Allow from this source**, then go back and tap **Install**.
 4. Open **Road Dog**.
 
-Current build: **19**
+Current build: **20**
 
 ## Updating
 
