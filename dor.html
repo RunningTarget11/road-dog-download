@@ -152,7 +152,7 @@ body.out main{padding-top:22px}
   <div class="eyebrow">CHP 115A · Daily Observation Report</div>
   <h1>DOR Narrative Builder</h1>
   <p>Pick the best and worst of the day, add what else you saw, and get the write-up. Works offline, no account needed. Made by Circuit Mandate.</p>
-  <p id="ver" style="font-size:11px;opacity:.65;margin-top:6px">Version 1.2 (offline) · updated Nov 15, 2026</p>
+  <p id="ver" style="font-size:11px;opacity:.65;margin-top:6px">Version 1.3 (offline) · updated Nov 15, 2026</p>
 </header>
 <main>
 <div id="inputs">
@@ -553,41 +553,125 @@ function ratingWordsBest(r){r=+r;if(r>=7)return'reached the superior level descr
 function ratingWordsWorst(r){r=+r;if(!r)return'fell short of the acceptable level of the 115A standard';if(r<=1)return'was at the unacceptable level described in the 115A standard';if(r<=3)return'fell below the acceptable level of the 115A standard';return'met the minimum acceptable level of the 115A standard, but showed room for improvement'}
 function obsIn(n,type){return S.obs.filter(o=>String(o.cat)===String(n)&&o.type===type)}
 
+const WHY={
+1:'How a trainee receives and uses feedback is the engine of the whole training program; a trainee who takes correction well improves quickly in every other category.',
+2:'Motivation and a sense of the job as a career drive every other area of growth, and they show the public an officer who cares about the work.',
+3:'Integrity is the foundation of public trust and of every report, citation and statement an officer will ever sign; without it nothing else holds up.',
+4:'Leadership and command presence let an officer guide people through difficult moments, reduce conflict and bring order to a scene without needing force.',
+5:'A professional appearance sets the tone before a word is spoken, supports command presence and reflects directly on the Department.',
+6:'Every public contact shapes how the community sees the Department; courtesy and clear explanations build trust and lead to better compliance and cooperation.',
+7:'Good working relationships with partners, supervisors and dispatch keep everyone safer and make the shift run smoothly.',
+8:'Community connections help prevent problems before they start and give the Department partners when problems need solving.',
+9:'Fire, EMS, tow and allied agencies are part of almost every serious incident; smooth coordination gets people help faster and keeps scenes safe.',
+10:'Driving is the task officers do most, and it carries real risk to the officer, the public and Department equipment.',
+11:'Emergency driving is one of the highest-risk tasks in the job; getting there safely matters more than getting there fast.',
+12:'Knowing the beat and the fastest practical route gets help to people sooner and keeps dispatch and backup units accurately informed.',
+13:'Citations and forms become legal records; errors can cause cases to be dismissed and create extra work for the courts and the Area.',
+14:'A report is often the only account a prosecutor, supervisor or court will see; if it is not clear and complete, the work in the field is lost.',
+15:'Clean, correct writing makes reports credible and easy to understand, and it reflects on the officer when reports are read in court.',
+16:'Timely reports keep the officer available for calls and get information to investigators, prosecutors and the public when it is needed.',
+17:'Routine calls make up most of the job; handling them independently and completely frees the officer and the Area for everything else.',
+18:'Stressful calls are where mistakes are most costly; staying calm and in control protects everyone involved and keeps the situation from getting worse.',
+19:'A sound investigation protects the rights of everyone involved and makes sure the right facts, evidence and conclusions reach the report.',
+20:'Good interviews produce accurate statements, and lawful interrogations keep those statements admissible in court.',
+21:'Self-initiated enforcement is how officers reduce collisions and crime before calls ever come in; it is the core of proactive patrol.',
+22:'Officer safety habits must be automatic on every contact, because danger on a stop can appear without warning.',
+23:'Contacts with suspects and persons in custody carry the highest risk of attack or escape; control and a position of advantage are essential.',
+24:'Voice and presence resolve most contacts without force; the right words and tone protect the officer, the subject and the Department.',
+25:'Force must be reasonable and matched to the resistance; too little or too much creates danger and liability.',
+26:'Judgment ties every other skill together; sound decisions made independently are what the program is ultimately measuring.',
+27:'Traffic management keeps officers and motorists alive on the roadway and prevents secondary collisions at scenes.',
+28:'At a major incident the first officer sets the tone; early command, notifications and resources save time and lives.',
+29:'The officer is often first on scene; quick, correct first aid can be the difference for an injured person.',
+30:'Correct radio procedure keeps dispatch and partners aware of the officer\'s location and status, which is a basic officer safety practice.',
+31:'Clear radio communication prevents dangerous misunderstandings and keeps the whole service area informed.',
+32:'The MDC carries dispatch details, warrants and officer safety information; using it well keeps the officer informed and accurately logged.',
+33:'Department policy protects the public, the officer and the Department; knowing and following it is a basic expectation of the job.',
+34:'Area procedures keep supervisors informed and the Area running consistently; following them builds trust with the chain of command.',
+35:'Knowing the elements of the law is what makes an arrest or citation correct and defensible in court.',
+36:'Arrests, searches and seizures must be lawful, or the case and the evidence can be lost and the officer exposed to liability.',
+37:'The Vehicle Code is the core of CHP enforcement; correct sections make citations hold up and keep enforcement fair.'
+};
+const CORR={
+1:['Listen fully to feedback before responding','repeat back the correction in their own words','apply it on the very next similar contact and ask the FTO whether it was done correctly'],
+2:['Arrive each shift prepared and ready to work','set a specific learning goal for each shift','spend time off duty reviewing material from the day'],
+3:['Report errors immediately and own them','write and speak only what actually occurred','hold to the full standard even when no one is watching'],
+4:['Step forward and give clear direction early in a contact','acknowledge the concerns of the people involved','use influence and communication before relying on authority'],
+5:['Inspect uniform and equipment before every shift','keep spare uniform items and equipment in the unit','correct any deficiency before going in service'],
+6:['Introduce themselves and explain the reason for the contact','stay courteous and patient even when the other person is not','close every contact by answering questions and explaining next steps'],
+7:['Communicate plans with partner units before acting','follow the chain of command for requests and concerns','offer help to others when their own work is done'],
+8:['Make at least one non-enforcement community contact each shift','learn the local resources available for referrals','follow up on community concerns they receive'],
+9:['Introduce themselves to the allied agency lead on arrival','share information and agree on roles early','give clear, specific instructions to tow and support personnel'],
+10:['Keep a safe following distance and a high visual horizon','use mirrors and scan constantly','avoid operating equipment while the vehicle is moving whenever possible'],
+11:['Slow to a speed where every intersection can be cleared','use lights and siren only as policy allows','talk through the route and hazards out loud during the response'],
+12:['Study the beat map before each shift','drive unfamiliar areas during slow periods','confirm the route before starting a response'],
+13:['Review each form against a checklist before submitting','learn which form fits each situation','ask for a second look on unfamiliar forms until they become routine'],
+14:['Outline the report before writing','collect every needed detail at the scene before clearing','read the report the way a prosecutor would and fill any gaps'],
+15:['Proofread every report before submitting','keep a list of commonly misspelled words and terms','use short, clear sentences'],
+16:['Start reports as soon as practical after the call','write from notes taken at the scene','set a time goal for each type of report'],
+17:['Talk through the steps of a routine call before arriving','handle each task to completion before moving on','take action without waiting to be prompted'],
+18:['Take a breath and assess before acting','focus on safety, control and communication first','debrief stressful calls with the FTO afterward'],
+19:['Protect the scene first','look for and document all available evidence','follow every obvious lead before clearing'],
+20:['Prepare key questions before the interview','use open-ended questions and let people talk','identify everyone involved and record their information'],
+21:['Patrol actively and look for primary collision factor violations','use briefing information to guide patrol','stop and check suspicious circumstances instead of rationalizing them'],
+22:['Never stand between vehicles or turn their back on a violator','keep their weapon hand free and the violator in sight','position the unit and themselves to stay out of passing traffic'],
+23:['Pat search every subject before placing them in the unit','handcuff when policy and the situation call for it','keep a position of advantage and search the unit after every transport'],
+24:['Use a firm, clear, calm voice','give one command at a time and confirm it is understood','match tone to the situation without escalating it'],
+25:['Practice control holds and handcuffing in training','match force to the resistance and reassess constantly','check and double-lock handcuffs every time'],
+26:['Gather the available facts before deciding','consider options and possible outcomes','make the decision independently and be ready to explain why'],
+27:['Choose stop locations with room and visibility','place flares and cones to protect the scene','stop to assist disabled motorists'],
+28:['Take command and announce it','make required notifications and request resources early','set up a perimeter and protect the scene'],
+29:['Carry required medical equipment every shift','assess and treat the most serious injuries first','request EMS as early as possible'],
+30:['Clear with dispatch after every stop and call','give location and status at the start of every contact','review the codes and procedures used most often'],
+31:['Plan what to say before keying the microphone','listen for their call sign and nearby beat traffic','speak at a steady pace in a calm, clear voice'],
+32:['Update unit status at every change','read every MDC message promptly','review dispatch details for officer safety information before arriving'],
+33:['Review the policies that apply to the day\'s activity','look up policy when unsure instead of guessing','be able to explain the policy behind each decision'],
+34:['Review Area SOPs on notifications, booking and court','make supervisor notifications as soon as required','ask when unsure of a local procedure'],
+35:['Study the elements of the most common crimes','confirm every element is present before acting','use reference material to find the correct section'],
+36:['Review laws of arrest, search and seizure','confirm legal grounds before every search or arrest','give Miranda whenever custody and questioning meet'],
+37:['Study the most frequently used VC sections','match the observed violation to the exact section before citing','review "may take" and "shall take" violations']
+};
+
+function whyOf(c){return WHY[c[0]]||impactFor(c)}
+function whyLc(c){const w=whyOf(c);return w.charAt(0).toLowerCase()+w.slice(1)}
+function corrSteps(c){const k=CORR[c[0]];if(!k)return'';return `(1) ${lc(k[0])}; (2) ${lc(k[1])}; and (3) ${lc(k[2])}.`}
+function phaseBest(){return PHASE_EARLY()?`This is a strong showing for a trainee in ${S.phase}. It reflects good preparation and a real willingness to apply what has been taught, and it shows the trainee is building the right habits early in the program.`
+  :`This is the consistent, independent level of performance expected of a trainee in ${S.phase}, and the trainee delivered it. It shows the trainee is ready to handle this kind of work with growing confidence.`}
+
 function writeBest(){const c=catBy(S.bestCat);if(!c)return null;const notes=S.bestEx.trim();const extra=obsIn(c[0],'good');
   let p1=`The trainee's most acceptable area of performance during this shift was ${c[2]} (Category ${c[0]}). `;
   p1+=notes?`I observed the following: ${sent(notes)} `:'[Describe the specific incident here.] ';
-  if(extra.length)p1+=`In addition, the trainee ${extra.map(o=>lc(o.text)).join(', and ')}. `;
+  extra.forEach(o=>{p1+=`The trainee also ${lc(o.text)}. `});
   p1+=`Throughout these contacts the trainee demonstrated the skills this category calls for and carried out the tasks in a calm, organized and professional manner.`;
-  let p2=`Under the 115A standard, acceptable performance in this category means that ${stdLower(c[5])} At the superior level, ${stdLower(c[6])} `;
-  p2+=`Based on what I observed, the trainee's performance today ${ratingWordsBest(S.bestRate)}. ${impactFor(c)} `;
-  p2+=PHASE_EARLY()?`This is a strong showing for a trainee in ${S.phase}, and it reflects good preparation and a willingness to apply what has been taught.`
-    :`This is the level of consistent, independent performance expected of a trainee in ${S.phase}, and the trainee delivered it.`;
-  const p3=`The trainee is commended for this performance. It reflects well on the trainee and on the Department, and it shows the kind of professionalism that builds public trust. I encourage the trainee to keep up this standard and to carry the same approach into every area of the job as training continues.`;
-  return{title:'MOST ACCEPTABLE',body:[p1,p2,p3].join('\n\n')}}
+  const p2=`This performance stands out because ${whyLc(c)} Under the 115A standard, acceptable performance in this category means that ${stdLower(c[5])} At the superior level, ${stdLower(c[6])} Based on what I observed, the trainee's performance today ${ratingWordsBest(S.bestRate)}.`;
+  const p3=`${impactFor(c)} ${phaseBest()} Performance like this shows that the trainee understands not only what to do, but why it matters.`;
+  const p4=`Kudos to the trainee for this performance. The trainee's work in ${c[2]} was a highlight of the shift, and it reflects well on the trainee and on the Department. Well done. I encourage the trainee to take pride in this, to keep up this standard on every contact, and to carry the same approach into every area of the job as training continues.`;
+  return{title:'MOST ACCEPTABLE',body:[p1,p2,p3,p4].join('\n\n')}}
 
 function writeWorst(){const c=catBy(S.worstCat);if(!c)return null;const notes=S.worstEx.trim();const extra=obsIn(c[0],'bad');
   let p1=`The trainee's least acceptable area of performance during this shift was ${c[2]} (Category ${c[0]}). `;
   p1+=notes?`I observed the following: ${sent(notes)} `:'[Describe the specific incident here.] ';
-  if(extra.length)p1+=`In addition, the trainee ${extra.map(o=>lc(o.text)).join(', and ')}.`;
-  let p2=`Under the 115A standard, acceptable performance in this category means that ${stdLower(c[5])} The trainee's performance today ${ratingWordsWorst(S.worstRate)}. `;
-  p2+=PHASE_EARLY()?`As the trainee is in ${S.phase}, this is treated as a learning point.`
+  extra.forEach(o=>{p1+=`The trainee also ${lc(o.text)}. `});
+  let p2=`This matters because ${whyLc(c)} Under the 115A standard, acceptable performance in this category means that ${stdLower(c[5])} The trainee's performance today ${ratingWordsWorst(S.worstRate)}. `;
+  p2+=PHASE_EARLY()?`As the trainee is in ${S.phase}, this is treated as a learning point, and it is an area the trainee can correct with focused effort.`
     :PHASE_EXT()?`At this point in an extension phase, this skill is expected to be fully established, and continued deficiency in this area will need to be addressed.`
     :`At ${S.phase}, this skill is expected to be established, and the trainee needs to show consistent improvement in this area.`;
   const good=(PHR[c[0]]||[[]])[0];
-  let p3=`Suggested corrections: Review the 115A standard for ${c[2]} before the next shift.`;
+  let p3=`Suggested corrections: To meet the 115A standard, the trainee should ${corrSteps(c)||'review the standard for this category and apply it on every contact.'}`;
   if(good.length)p3+=` On upcoming contacts, the goal is performance that would be noted as: ${good.slice(0,3).map(lc).join('; ')}.`;
-  p3+=` I will continue to monitor this area and provide feedback on the next shift.`;
-  return{title:'LEAST ACCEPTABLE',body:[p1,p2,p3].join('\n\n')}}
+  const p4=`This is a correctable area. The trainee is encouraged to treat it as a learning opportunity, to review the 115A standard for ${c[2]} before the next shift, and to ask questions about anything that is unclear. I will continue to monitor this area and provide feedback on the next shift.`;
+  return{title:'LEAST ACCEPTABLE',body:[p1,p2,p3,p4].join('\n\n')}}
 
 function asSentence(t){t=String(t||'').trim();const w=(t.split(/\s+/)[0]||'').toLowerCase();
   if(/^(the|trainee|he|she|they|i|during|on|at|while|after|before)$/.test(w))return sent(t);
   if(/ed$/.test(w)||/^(did|was|made|wrote|took|kept|gave|forgot|ran|drove|got|had|showed|missed|left|stood|knew|found|sought|built|held|lost|spoke|let|put)$/.test(w))return sent('The trainee '+lc(t));
   return sent(t)}
 function writeGeneral(){const other=S.obs.filter(o=>!o.cat||(String(o.cat)!==String(S.bestCat)&&String(o.cat)!==String(S.worstCat)));if(!other.length)return null;
-  const parts=other.map(o=>{const c=catBy(o.cat);const tag=c?` (Cat ${c[0]})`:'';
-    if(o.type==='good')return `${asSentence(o.text).replace(/\.$/,'')}${tag}. ${c?`This met the 115A standard for ${c[2]}. `:''}This is noted as a positive, and the trainee is encouraged to keep it up.`;
-    const fix=c&&PHR[c[0]]?PHR[c[0]][0][0]:'';
-    return `${asSentence(o.text).replace(/\.$/,'')}${tag}. ${fix?`Suggested correction: ${sent(fix)}`:'This is an area for the trainee to improve.'}`});
+  const parts=other.map(o=>{const c=catBy(o.cat);const tag=c?` (Cat ${c[0]})`:'';const lead=asSentence(o.text).replace(/\.$/,'')+tag+'.';
+    if(o.type==='good')return `${lead} ${c?`This met the 115A standard for ${c[2]}, and it matters because ${whyLc(c)} `:''}Nice work by the trainee. This is noted as a positive, and the trainee is encouraged to keep it up.`;
+    if(!c)return `${lead} This is an area for the trainee to improve. The trainee should review the correct procedure and apply it on the next similar contact.`;
+    const k=CORR[c[0]]||[];
+    return `${lead} This matters because ${whyLc(c)} Suggested correction: ${k.length?sent(k[0])+' The trainee should also '+lc(k[1])+'.':'Review the 115A standard for '+c[2]+' and apply it on the next similar contact.'}`});
   return{title:'GENERAL/NOTEWORTHY EVENTS',body:parts.join('\n\n')}}
 
 function writeRemedial(){if(S.remStatus==='none'&&!S.remedial.trim())return null;
