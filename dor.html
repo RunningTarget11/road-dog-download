@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DOR Narrative Builder — CHP 115A (offline)</title>
+<style>
+:root{
+  --bg:#f4f2ed; --card:#fffdf8; --ink:#1d2430; --muted:#5d6675; --line:#dcd7cc;
+  --navy:#1f3a5f; --navy-2:#2c5282; --gold:#b8860b; --gold-soft:#f5ead2;
+  --bad:#b23a2e; --bad-soft:#f8e3e0; --ok:#2f6f4f; --ok-soft:#e1efe6;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#12161d;--card:#1a2029;--ink:#e8e6e1;--muted:#a1a9b6;--line:#2e3644;
+  --navy:#9fbbe0;--navy-2:#7ea3d4;--gold:#e0b24a;--gold-soft:#3a3120;
+  --bad:#f08a7e;--bad-soft:#3d2523;--ok:#7fcca2;--ok-soft:#1f3329;}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 'IBM Plex Sans',system-ui,sans-serif;-webkit-text-size-adjust:100%}
+header.top{background:var(--navy);color:#fff;padding:18px 16px 14px}
+@media (prefers-color-scheme: dark){header.top{background:#16263d}}
+header.top .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+header.top h1{margin:2px 0 0;font-size:21px;font-weight:700;letter-spacing:-.01em}
+header.top p{margin:4px 0 0;font-size:13px;opacity:.8}
+main{max-width:760px;margin:0 auto;padding:14px 12px 110px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:15px;color:var(--navy);display:flex;align-items:center;gap:8px}
+.card.best{border-top:4px solid var(--ok)} .card.worst{border-top:4px solid var(--bad)}
+.card.best h2{color:var(--ok)} .card.worst h2{color:var(--bad)}
+.hint{color:var(--muted);font-size:13px;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid .full{grid-column:1/-1}
+label.f{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+input,select,textarea{width:100%;margin-top:4px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px 'IBM Plex Sans'}
+textarea{min-height:90px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--navy-2);outline-offset:0;border-color:transparent}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.seg button{border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:7px 10px;border-radius:999px;font:500 13px 'IBM Plex Sans';cursor:pointer}
+.seg button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+@media (prefers-color-scheme: dark){.seg button.on{color:#12161d}}
+details.info>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+details.info>summary::-webkit-details-marker{display:none}
+details.info>summary h2{margin:0}
+details.info>summary .sumline{font-size:13px;color:var(--muted)}
+details.info[open]>summary{margin-bottom:12px}
+details.std{margin:8px 0 10px;font-size:13px}
+details.std summary{cursor:pointer;color:var(--navy-2);font-weight:600}
+details.std .lvl{margin:8px 0 0;padding:8px 10px;border-radius:8px;background:var(--bg)}
+details.std .lvl b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:12px 16px;font:600 15px 'IBM Plex Sans';cursor:pointer}
+.btn-primary{background:var(--navy);color:#fff}
+@media (prefers-color-scheme: dark){.btn-primary{color:#12161d}}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn-sm{padding:8px 12px;font-size:13px;border-radius:8px}
+.btn-good{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok)}
+.btn-bad{background:var(--bad-soft);color:var(--bad);border:1px solid var(--bad)}
+.addrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.items{list-style:none;margin:12px 0 0;padding:0}
+.items li{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--bg)}
+.items li .dot{flex:none;margin-top:2px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+.items li.good .dot{background:var(--ok-soft);color:var(--ok)}
+.items li.bad .dot{background:var(--bad-soft);color:var(--bad)}
+.items li .tx{flex:1;font-size:14px}
+.items li .tx small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.items li button{flex:none;border:0;background:none;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;padding:0 4px}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+.dock .in{max-width:760px;margin:0 auto;display:flex;gap:8px;align-items:center}
+.dock .sp{flex:1}
+#outWrap,#emailWrap{display:none}
+.picker{display:block;width:100%;margin-top:4px;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px 'IBM Plex Sans';text-align:left;cursor:pointer}
+.picker .ph{color:var(--muted)} .picker small{display:block;color:var(--muted);font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px}
+.chips:empty{display:none}
+.chip{border:1px dashed var(--line);background:var(--card);color:var(--ink);padding:6px 10px;border-radius:999px;font:13px 'IBM Plex Sans';cursor:pointer;text-align:left}
+.chip.g{border-color:var(--ok);color:var(--ok)} .chip.b{border-color:var(--bad);color:var(--bad)}
+.chiplbl{width:100%;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.rate{margin:10px 0 4px}
+.rate .rl{display:flex;justify-content:space-between;align-items:center}
+.rate .scale{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:6px}
+.rate .scale button{padding:9px 0;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:700 15px 'IBM Plex Sans';cursor:pointer}
+.rate .scale button.sug{border:2px dashed var(--gold)}
+.rate .scale button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+@media (prefers-color-scheme: dark){.rate .scale button.on{color:#12161d}}
+.rate .why{font-size:13px;color:var(--muted);margin-top:6px}
+.rate .cap{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:3px}
+.sheet{position:fixed;inset:0;z-index:22;background:var(--bg);display:none;flex-direction:column}
+.sheet.on{display:flex}
+.sh-top{display:flex;gap:8px;align-items:center;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--line)}
+.sh-top input{margin:0}
+.sh-body{flex:1;overflow:auto;padding:10px 12px 40px;-webkit-overflow-scrolling:touch}
+.pk-g{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:14px 4px 6px}
+.pk-i{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 12px;margin-bottom:6px;font:15px 'IBM Plex Sans';cursor:pointer}
+.pk-i b{color:var(--navy)} .pk-i small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.pk-i.on{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
+.askbox{background:var(--gold-soft);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:14px}
+body.email header.top,body.email #inputs,body.email #outWrap{display:none}
+body.email #emailWrap{display:block}
+body:not(.email) .em-only,body.email .noem{display:none}
+body.out header.top,body.out #inputs{display:none}
+body.out #outWrap{display:block}
+body:not(.out) .out-only,body.out .in-only{display:none}
+#out p{margin:0 0 16px;font:16.5px/1.65 'IBM Plex Serif',Georgia,serif;white-space:pre-wrap;outline:none;padding:2px 0}
+#out p:focus{background:var(--card);box-shadow:0 0 0 6px var(--card)}
+body.out main{padding-top:22px}
+.out-sec{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px}
+.out-sec .oh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.out-sec .oh h4{margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--navy)}
+.out-sec .ob{padding:12px 14px;font-family:'IBM Plex Serif',Georgia,serif;font-size:15.5px;line-height:1.6;white-space:pre-wrap;outline:none}
+.out-sec .ob:focus{background:var(--bg)}
+.status{font-size:13px;color:var(--muted);margin:4px 0 10px}
+.err{color:var(--bad)}
+.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:999px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:30}
+.toast.on{opacity:1}
+.modal{display:none;position:fixed;left:12px;right:12px;bottom:90px;max-width:520px;margin:0 auto;z-index:25;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+/* preview */
+.pv{position:fixed;inset:0;z-index:20;background:#5b6270;overflow:auto;display:none;-webkit-overflow-scrolling:touch}
+.pv.on{display:block}
+.pv-bar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:10px 12px;background:#1f3a5f;color:#fff}
+.pv-bar b{flex:1;font-size:14px}
+.pv-bar .btn{background:#fff;color:#1f3a5f}
+.paper{background:#fff;color:#111;width:min(100% - 16px,760px);margin:12px auto;padding:22px 20px 26px;box-shadow:0 4px 18px rgba(0,0,0,.35);font:12px/1.35 Arial,Helvetica,sans-serif}
+.paper .ph{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:8px}
+.paper .ph .l{font-size:9px;line-height:1.3}
+.paper .ph .t{font-size:15px;font-weight:700;letter-spacing:.02em;text-align:center}
+.paper .ph .r{font-size:9px;text-align:right}
+.paper .flds{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #111;border-bottom:0}
+.paper .fld{border-right:1px solid #111;border-bottom:1px solid #111;padding:3px 5px;min-height:34px}
+.paper .fld:nth-child(4n){border-right:0}
+.paper .fld .k{font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.paper .fld .v{font-size:12px;margin-top:2px;min-height:14px}
+.paper .phases{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:10.5px;padding:6px 2px}
+.paper .box{display:inline-block;width:10px;height:10px;border:1px solid #111;vertical-align:-1px;margin-right:4px;text-align:center;line-height:9px;font-size:9px;font-weight:700}
+.paper .nh{font-weight:700;font-size:12px;letter-spacing:.08em;margin:12px 0 2px}
+.paper .sec{margin-top:12px}
+.paper .sec .q{font-weight:700;font-size:11px;border-bottom:1px solid #111;padding-bottom:2px}
+.paper .sec .q .pn{display:inline-block;min-width:34px;border-bottom:1px solid #111;text-align:center;margin-left:6px}
+.paper .sec .cat{font-size:10px;font-style:italic;margin-top:3px}
+.paper .sec .a{white-space:pre-wrap;font-size:12px;line-height:1.5;padding:5px 2px;min-height:48px;background:repeating-linear-gradient(#fff 0 17px,#e6e6e6 17px 18px)}
+.paper .sec .a.empty{color:#999;font-style:italic}
+.paper .tag{display:inline-block;font-size:8px;font-weight:700;letter-spacing:.06em;padding:1px 5px;border-radius:3px;margin-left:6px;vertical-align:1px}
+.paper .tag.d{background:#d3e6f5;color:#1f3a5f}.paper .tag.n{background:#eee;color:#555}
+.paper .pp{margin:0 0 14px;white-space:pre-wrap;font:15px/1.6 'IBM Plex Serif',Georgia,serif}
+.paper .pp:last-child{margin-bottom:0}
+.paper .pp.empty{color:#999;font-style:italic}
+.paper .prog{font-size:10px;color:#555;margin:0 0 8px;padding:6px 8px;background:#f4f4f4;border-left:3px solid #b8860b}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="eyebrow">CHP 115A · Daily Observation Report</div>
+  <h1>DOR Narrative Builder</h1>
+  <p>Pick the best and worst of the day, add what else you saw, and get the write-up. Works offline, no account needed. Made by Circuit Mandate.</p>
+</header>
+<main>
+<div id="inputs">
+  <div class="card">
+    <h2>Trainee phase</h2>
+    <div class="seg" data-seg="phase"><button>Phase I</button><button>Phase II</button><button>Phase III</button><button>Phase IV</button><button>Extension I</button><button>Extension II</button></div>
+  </div>
+
+  <div class="card best">
+    <h2>▲ Best of the day</h2>
+    <label class="f">Category</label>
+    <button class="picker" id="bestPick" onclick="openPicker('best')"></button>
+    <div id="bestStd"></div>
+    <div id="bestRate"></div>
+    <div class="chips" id="bestPhr"></div>
+    <label class="f">What happened<textarea id="bestEx" placeholder="Shorthand is fine — e.g. 'DUI stop I-5 NB, clear commands, good positioning, articulated FSTs well'"></textarea></label>
+  </div>
+
+  <div class="card worst">
+    <h2>▼ Worst of the day</h2>
+    <label class="f">Category</label>
+    <button class="picker" id="worstPick" onclick="openPicker('worst')"></button>
+    <div id="worstStd"></div>
+    <div id="worstRate"></div>
+    <div class="chips" id="worstPhr"></div>
+    <label class="f">What happened<textarea id="worstEx" placeholder="e.g. 'Stood between vehicles on 2 stops; corrected after first, repeated later'"></textarea></label>
+  </div>
+
+  <div class="card">
+    <h2>Other things you saw</h2>
+    <p class="hint">Add as many as you want, good or bad. They're worked into the write-up.</p>
+    <textarea id="obsText" style="min-height:64px" placeholder="e.g. 'Forgot to clear with dispatch after 2nd stop'"></textarea>
+    <label class="f" style="margin-top:8px">Category (optional)</label>
+    <button class="picker" id="obsPick" onclick="openPicker('obs')"></button>
+    <div class="chips" id="obsPhr"></div>
+    <div class="addrow">
+      <button class="btn btn-sm btn-good" onclick="addObs('good')">+ Good</button>
+      <button class="btn btn-sm btn-bad" onclick="addObs('bad')">+ Needs work</button>
+    </div>
+    <ul class="items" id="obsList"></ul>
+  </div>
+
+  <div class="card">
+    <h2>Remedial training <span style="font-weight:400;font-size:12px;color:var(--muted)">optional</span></h2>
+    <div class="seg" data-seg="remStatus"><button data-val="none">None</button><button data-val="complete">Complete</button><button data-val="todo">To be performed</button></div>
+    <textarea id="remedial" style="margin-top:10px;min-height:64px" placeholder="What was covered or planned"></textarea>
+  </div>
+
+  <div class="status" id="inStatus"></div>
+</div>
+<div id="outWrap">
+  <div class="status" id="status"></div>
+  <div id="out"></div>
+</div>
+<div id="emailWrap">
+  <div class="card">
+    <h2>Email the narrative</h2>
+    <label class="f">To<input id="emTo" type="email" inputmode="email" autocomplete="email" placeholder="Separate several addresses with commas"></label>
+    <label class="f" style="margin-top:10px">CC (optional)<input id="emCc" type="email" inputmode="email" autocomplete="off"></label>
+    <label class="f" style="margin-top:10px">Subject<input id="emSubj"></label>
+    <label class="f" style="margin-top:10px">Message<textarea id="emBody" style="min-height:300px;font:15px/1.55 'IBM Plex Serif',Georgia,serif"></textarea></label>
+    <label class="f" style="margin-top:10px">Sign-off name (remembered)<input id="emSig" autocomplete="name" placeholder="e.g. Officer J. Quigley"></label>
+    <div class="status" id="emStatus" style="margin-top:12px"></div>
+    <div style="display:grid;gap:8px;margin-top:4px">
+      <a class="btn btn-primary" id="mailtoBtn" style="text-align:center;text-decoration:none" href="#">Open in Mail app</a>
+      <button class="btn btn-ghost" onclick="copyText(emailText())">Copy email</button>
+    </div>
+  </div>
+</div>
+</main>
+
+<div class="dock"><div class="in">
+  <span class="in-only"><button class="btn btn-ghost btn-sm" onclick="$('#confirmBox').style.display='block'">New DOR</button></span>
+  <span class="out-only noem"><button class="btn btn-ghost btn-sm" onclick="setMode('in')">← Edit</button></span>
+  <span class="em-only"><button class="btn btn-ghost btn-sm" onclick="closeEmail()">← Write-up</button></span>
+  <span class="sp"></span>
+  <span class="in-only"><button class="btn btn-primary btn-sm" id="genBtn" onclick="generateLocal()">Generate</button></span>
+  <span class="out-only noem"><button class="btn btn-ghost btn-sm" onclick="copyPrompt()">AI prompt</button> <button class="btn btn-ghost btn-sm" onclick="copyAll()">Copy</button> <button class="btn btn-primary btn-sm" onclick="openEmail()">Email</button></span>
+</div></div>
+<div class="toast" id="toast"></div>
+<div class="sheet" id="sheet">
+  <div class="sh-top"><input id="pkQ" placeholder="Describe it: radio, controlling suspect, willing to learn…" autocomplete="off"><button class="btn btn-ghost btn-sm" onclick="closePicker()">Close</button></div>
+  <div class="sh-body">
+    <div id="pkAsk"></div>
+    <div id="pkList"></div>
+  </div>
+</div>
+<div class="card modal" id="confirmBox">
+  <h2>Start a new DOR?</h2>
+  <p class="hint">Clears today's entries and write-up.</p>
+  <div class="row" style="justify-content:flex-end"><button class="btn btn-ghost btn-sm" onclick="$('#confirmBox').style.display='none'">Cancel</button><button class="btn btn-primary btn-sm" onclick="resetAll()">Clear</button></div>
+</div>
+
+
+<script>
+const CATS=[[1, "Professional Orientation", "Acceptance of feedback — FTEP program", "Acceptance of Feedback – Field Training and Evaluation Program. This category evaluates the way in which the trainee accepts criticism and how the trainee uses the feedback to improve performance and further learning.", "The trainee rationalizes mistakes, denies that errors were made, and/or is argumentative. The trainee refuses to, or does not attempt to, make corrections. The trainee considers criticism a personal attack.", "The trainee accepts criticism in a positive manner and applies it to improve performance and further learning.", "The trainee actively solicits criticism/feedback in order to learn more and improve performance. The trainee does not argue or blame other persons/things for errors."], [2, "Professional Orientation", "Attitude toward law enforcement", "Attitude Toward Law Enforcement. This category evaluates the trainee in terms of personal motivation, goals, and self-acceptance of the job’s responsibilities.", "The trainee sees the position as a job versus a career. The trainee uses the job as an ego boost, abuses authority, and/or demonstrates little dedication to the principles of the profession. The trainee is disinterested and/or lacks motivation. The trainee does not attempt to improve performance.", "The trainee demonstrates an active interest in their new career and the responsibilities that come with it.", "The trainee utilizes off-duty time to enhance professional knowledge. The trainee actively solicits assistance from others to increase knowledge and improve skills. The trainee demonstrates concern for the fair and equitable enforcement of the law, and maintains high ideals in terms of professional responsibilities."], [3, "Professional Orientation", "Integrity/Character", "Integrity/Character. This category evaluates the manner in which the trainee understands, accepts, and demonstrates their integrity and character.", "The trainee accepts and employs a standard of mediocrity. The trainee has no sense of accountability and/or responsibility to the Department or community.", "The trainee demonstrates the ability to build/maintain public trust through honesty, community awareness, and professionalism. The trainee is able to resolve ethical situations through prior planning and decision-making.", "The trainee consistently demonstrates a high degree of internal strength, courage, and character. The trainee exemplifies responsibility of service and enhances public trust."], [4, "Professional Orientation", "Leadership", "Leadership. This category evaluates the trainee’s ability to exercise influence among people utilizing ethical values and goals for an intended change.", "The trainee does not demonstrate strength of character by appropriate use of command presence. The trainee does not prevent/reduce conflict and fails to show empathy.", "The trainee understands the difference between influence and authority, and provides an expected level of competency to the community through effective collaboration, communication/mediation, and compassion.", "The trainee will not rationalize to compromise integrity. The trainee has the courage to be flexible and employ discretion. The trainee consistently demonstrates trust, respect, and genuineness."], [5, "Appearance", "General appearance", "General Appearance. This category evaluates physical appearance, dress, demeanor, and equipment.", "The trainee fails to present a professional image. The trainee’s uniform fits poorly or is improperly worn or wrinkled. The trainee’s hair is not groomed and/or is in violation of Department regulation. The trainee has dirty shoes, weapon, and/or equipment. Equipment is missing or inoperative. The trainee has offensive body odor and/or breath.", "The trainee’s uniform fits, is neat and clean, and is properly worn. The trainee’s weapon, leather, and equipment are clean and operative. The trainee’s hair is within regulations and their shoes and brass are shined.", "The trainee’s uniform is neat, clean, and tailored. Leather gear is shined, shoes are polished, and the trainee displays excellent command presence."], [6, "Relationships", "Relationships with citizens/community", "Relationships with the Public/Community. This category evaluates the trainee’s ability to interact with people (including suspects) and diverse members of the community in an appropriate and efficient manner.", "The trainee is abrupt, belligerent, overbearing, arrogant, or uncommunicative. The trainee overlooks or avoids “service” aspects of the job, is inaccessible to the public, introverted, overly sympathetic, ineffective, prejudicial, or biased. The trainee fails to explain actions to members of the public, does not follow up on requests from members of the public, and/or has poor non-verbal skills.", "The trainee is courteous, friendly, and empathetic to peoples’ perceptions of problems. The trainee communicates in a professional, unbiased manner. The trainee fully explains police actions to public contacts and follows up on public inquiries and requests. The trainee is service oriented, contacts the public in non-enforcement situations, and possesses good non-verbal skills.", "The trainee is very much at ease with public and suspect contacts. The trainee effectively manages time to allow increased community contact. The trainee quickly establishes rapport and leaves people with the feeling the officer is interested in serving them. The trainee is objective in all contacts and possesses excellent non- verbal skills."], [7, "Relationships", "Relationship with other Department members", "Relationship with Other Department Members. This category evaluates the trainee’s ability to effectively interact with other Department members of various ranks and in various capacities.", "The trainee patronizes their FTO/superiors/peers or is antagonistic towards them. The trainee gossips, is insubordinate, argumentative, and/or sarcastic. The trainee resists instruction, considers themselves superior, and belittles others. The trainee is not a “team player,” and relies on others to carry the trainee’s share of the work.", "The trainee adheres to the chain of command and accepts their role in the organization. The trainee establishes good relationships with their FTO, superiors, and peers and is accepted as a member of the group.", "The trainee is at ease when contacting all members of the organization while displaying proper consideration for their position. The trainee understands their superiors’ responsibilities and respects their position. The trainee is a peer group leader and actively assists others."], [8, "Relationships", "Community organizing", "Community Organizing. This category evaluates the manner in which the trainee relates to members of the community while performing normal duties. This category deals with the trainee’s efforts in community-oriented policing and community problem solving.", "The trainee has little or no understanding of the importance of public relations and community organizing to the Department. The trainee does not know the resources available to the Department and the community for problem solving. The trainee does not interact well with members of the community while in the performance of normal duties.", "The trainee has a basic understanding of the importance of public relations and community organizing to the Department. The trainee has a basic knowledge of the primary resources available to the Department and the community for problem solving. The trainee interacts well with members of the community while in the performance of normal duties.", "The trainee has a strong understanding of the importance of public relations and community organizing to the Department. The trainee takes personal ownership by actively participating in community events. The trainee knows most resources available to the Department and the community for problem solving and actively ensures this knowledge is up to date. The trainee interacts well with members of the community and promotes the Department while in the performance of normal duties."], [9, "Relationships", "Allied Agencies and/or support services", "Allied Agencies and/or Support Services. This category evaluates the manner in which the trainee interacts with members of allied agencies or other support services (e.g., fire departments, emergency medical services, tow operators).", "The trainee displays poor interpersonal and/or communication skills. The trainee is condescending and/or demeaning toward support personnel. The trainee fails to assume a leadership role or becomes confrontational. The trainee is disruptive, unprofessional, and lacks poise.", "The trainee demonstrates average interpersonal skills and communicates adequately. The trainee is able to eliminate potentially conflicting situations. The trainee provides leadership, maintains self-control, and conducts themselves in a professional manner.", "The trainee is effective and completely at ease during all contacts. The trainee communicates very well, quickly assumes a leadership role, and establishes rapport with confidence. The trainee maintains an air of professionalism and sense of poise."], [10, "Performance", "Driving skill: Routine conditions", "Driving Skill: Routine Conditions. This category evaluates the trainee’s skills in the operation of departmental vehicles under routine driving conditions.", "The trainee frequently violates traffic laws. The trainee is involved in chargeable accidents. The trainee maintains a low visual horizon, fails to allow a safety cushion, and/or does not practice defensive driving techniques. The trainee fails to maintain control of the vehicle or displays poor manipulative skills in vehicle operation. The trainee drives too fast or too slow for existing conditions.", "The trainee obeys traffic laws when appropriate. The trainee maintains an adequate safety cushion and visual horizon. The trainee maintains control of the vehicle while operating equipment, drives defensively, and is alert to activity outside of the vehicle.", "The trainee sets an example for lawful, courteous driving. The trainee consistently maintains a high visual horizon and safety cushion, and is consistently alert to surrounding activity. The trainee maintains complete control of the vehicle while operating the radio and equipment. The trainee is a superior defensive driver."], [11, "Performance", "Driving skill: Moderate/High-Stress and Emergency conditions", "Driving Skill: High-Stress and Emergency Conditions. This category evaluates the trainee’s skills in vehicle operation under Code 3 situations, in situations calling for other than usual driving, and under conditions calling for other than normal driving skills.", "The trainee is involved in preventable accident(s). The trainee uses red lights and siren unnecessarily or improperly. The trainee drives too fast or too slow for conditions/situations. The trainee loses control of the vehicle.", "The trainee maintains control of the vehicle and evaluates driving conditions/situations properly. The trainee minimally disrupts traffic and utilizes proper speed enforcement techniques safely and effectively. The trainee adheres to departmental policies and procedures regarding Code 3 pursuit enforcement driving.", "The trainee displays a high degree of reflex ability and driving competence. The trainee anticipates driving situations in advance and acts accordingly. The trainee practices defensive driving techniques and utilizes emergency lights and siren in a highly effective manner. The trainee responds well relative to the degree of stress present."], [12, "Performance", "Orientation/Response Time: Use of Maps", "Use of Map Book: Orientation/Response Time. This category evaluates the trainee’s awareness of surroundings, ability to find locations, and ability to arrive at destinations within an acceptable amount of time.", "The trainee is unaware of their location while on patrol, does not properly use maps, or is unable to relate location to destination. The trainee gets lost and/or spends too much time getting to destination.", "The trainee is aware of location while on patrol. The trainee properly uses maps and can relate location to destination. The trainee arrives within a reasonable amount of time using the most practical route to reach destination.", "The trainee remembers locations from previous visits and seldom needs maps. The trainee is aware of shortcuts and utilizes them to save time. The trainee possesses a high level of orientation to the beat and the community."], [13, "Performance", "Routine forms: Accuracy/Completeness", "Routine Forms: Accuracy/Completeness. This category evaluates the trainee’s ability to properly utilize departmental forms.", "The trainee consistently submits unacceptable forms which require major revisions. The trainee is unaware a form must be completed and/or is unable to complete the proper form for the given situation. The trainee’s forms are incomplete, illegible, inaccurate, or improperly used.", "The trainee submits forms requiring minor or no revisions. The trainee has knowledge of commonly used forms, consistently makes accurate form selection, and understands their use. The trainee completes forms with accuracy and thoroughness.", "The trainee consistently completes detailed forms without assistance. The trainee displays a high degree of accuracy, thoroughness, legibility, and neatness in form completion."], [14, "Performance", "Report writing: Organization/Details", "Report Writing: Organization/Details. This category evaluates the trainee’s ability to organize reports, supply the necessary details for a good report, and obtain all necessary information from reporting persons and/or witnesses.", "The trainee fails to elicit necessary information. The trainee is unable to organize information in a logical manner and translate it to a written format. The trainee omits pertinent details in the report. The trainee’s report is inaccurate and/or incomplete.", "The trainee elicits most information, completes reports, and organizes information in a logical manner. The trainee’s reports contain the required information and details. Minor revisions may be necessary to ensure proper interpretation.", "The trainee’s reports are complete and detailed accounts of events, and include all relevant information. They are written and organized so that any reader understands what transpired."], [15, "Performance", "Report writing: Grammar/Spelling/Neatness", "Report Writing: Grammar/Spelling/Neatness. This category evaluates the trainee’s ability to use proper grammar, spell correctly, and prepare reports that are neat and legible.", "The trainee’s reports are illegible or contain an excessive number of misspelled words. Sentence structure and/or word usage is incorrect or incomplete.", "The trainee’s reports are legible and grammar is at an acceptable level. Spelling is acceptable and errors are few. Errors, if present, do not distract from understanding the report. The trainee’s reports are neat and clean in appearance.", "The trainee’s reports are very neat and legible. The trainee’s reports contain no spelling or grammatical errors."], [16, "Performance", "Report writing: Appropriate time used", "Report Writing: Appropriate Time Used. This category evaluates the trainee’s ability to complete a report in an appropriate amount of time.", "The trainee requires an excessive amount of time to complete a report.", "The trainee completes reports within a reasonable amount of time.", "The trainee completes complex reports very quickly and efficiently without assistance from the FTO."], [17, "Performance", "Field performance: Non-stress conditions", "Field Performance: Non-Stress Conditions. This category evaluates the trainee’s ability to perform routine, non-stress law enforcement activities.", "The trainee becomes confused and disoriented when confronted with routine, non- stressful tasks. The trainee does not or cannot complete tasks. The trainee is unable to determine the appropriate course of action or avoids taking action.", "The trainee properly assesses aspects of routine situations, determines the appropriate response, and subsequently takes action.", "The trainee properly assesses aspects of routine situations, including the more unusual and/or complex issues. The trainee quickly ascertains the appropriate response and takes immediate action."], [18, "Performance", "Field performance: Stress conditions", "Field Performance: Stress Conditions. This category evaluates the trainee’s ability to perform under moderate to high stress conditions.", "The trainee becomes emotional, panic-stricken, and/or unable to function. The trainee holds back, loses their temper, or displays cowardice. The trainee overreacts or underreacts.", "The trainee remains calm and maintains self-control in most situations. The trainee determines the proper course of action and takes it. The trainee does not allow a situation to further deteriorate.", "The trainee remains calm and maintains self-control even in the most extreme situations. The trainee quickly restores control of the situation and takes command. The trainee determines the best course of action and takes it."], [19, "Performance", "Investigative skills", "Investigative Skills. This category evaluates the trainee’s ability to conduct a proper investigation.", "The trainee does not conduct a basic investigation, or conducts the investigation improperly. The trainee is unable to accurately identify the offense(s) committed. The trainee fails to discern readily available evidence, and makes frequent mistakes when identifying, collecting or submitting evidence and/or does not connect evidence with a suspect when apparent. The trainee does not protect the crime scene and/or fails to identify and follow up on obvious investigative leads.", "The trainee follows proper investigatory procedures in routine cases. The trainee is generally accurate in identifying the nature of offense(s) committed. The trainee collects, tags, logs, and submits evidence properly and connects evidence with a suspect when apparent.", "The trainee always follows proper investigatory procedures and is always accurate in identifying the nature of the offense(s) committed. The trainee always collects, tags, logs, and submits evidence properly. The trainee connects evidence with a suspect even when not apparent."], [20, "Performance", "Interview/Interrogation skills", "Interview/Interrogation Skills. This category evaluates the trainee’s ability to use proper questioning techniques, to vary techniques to fit persons being interviewed or interrogated, and to follow proper and lawful procedure.", "The trainee fails to use proper questioning techniques. The trainee does not elicit and/or record available information. The trainee does not establish appropriate rapport with the subject and/or does not control the interrogation of the suspect. The trainee fails to give Miranda admonishment when required. The trainee fails to elicit enough information to determine what is occurring. The trainee fails to identify the individuals contacted during the course of the investigation.", "The trainee uses proper questioning techniques. The trainee elicits available information and records the same. The trainee establishes proper rapport with the victims/witnesses, controls the interrogation of suspects, and properly conducts the Miranda admonishment.", "The trainee always uses proper investigative questioning techniques. The trainee establishes rapport with all victims/witnesses, controls the interrogation of even the most difficult suspects, and conducts successful interrogations of suspects."], [21, "Performance", "Self initiated field activity", "Self-Initiated Field Activity. This category evaluates the trainee’s desire and ability to observe and initiate enforcement activity.", "The trainee fails to observe or avoids suspicious activity. The trainee fails to seek out primary collision factor violations or provide service to the public. The trainee does not investigate possible criminal situations. The trainee rationalizes suspicious circumstances.", "The trainee recognizes and identifies enforcement-related activities. The trainee develops cases from observed activity. The trainee displays inquisitiveness.", "The trainee seldom misses observable enforcement-related activity. The trainee maintains information provided at briefings and utilizes the information as “probable cause” to initiate enforcement activity. The trainee is service oriented and makes quality contacts and/or arrests from observed activity."], [22, "Performance", "Officer safety: General", "Officer Safety: General. This category evaluates the trainee’s ability to perform police tasks without injuring themselves or others and without exposing themselves or others to unreasonable danger or risk.", "The trainee fails to follow acceptable safety procedures and/or fails to exercise officer safety, including but not limited to: (1) Exposes weapons to suspect (handgun, baton, oleoresin capsicum spray, etc.). (2) Fails to keep weapon hand free in enforcement situations. (3) Fails to control suspect’s movements. (4) Fails to use illumination when necessary or uses it improperly. (5) Does not keep violator/suspect in sight. (6) Fails to maintain good physical condition. (7) Fails to properly maintain personal safety equipment. (8) Does not anticipate potentially dangerous situations. (9) Stands too close to passing vehicular traffic. (10) Is careless with gun and/or other weapons. (11) Fails to position patrol vehicle properly on enforcement stops. (12) Makes poor choice of which weapon to use and when to use it. (13) Fails to cover other officers or have awareness of their activities. (14) Stands between vehicles on an enforcement stop. (15) Fails to search patrol vehicle after transporting arrestees.", "The trainee follows acceptable safety procedures. The trainee understands and applies them.", "The trainee always works safely. The trainee foresees dangerous situations and prepares for them. The trainee keeps their partner informed and determines best position for self and partner. The trainee is not overconfident and serves as an “officer safety” model for others."], [23, "Performance", "Officer safety: Suspicious Person/Suspect/In-Custody", "Officer Safety: In-Custody/High-Risk/Felony Stops. This category evaluates the trainee’s ability to perform enforcement-related tasks safely while dealing with suspicious persons, suspects, and prisoners.", "The trainee violates officer safety practices as outlined in Highway Patrol Manual (HPM) 70.6, Officer Safety Manual. The trainee fails to properly position the patrol vehicle during enforcement stops. The trainee fails to “pat search,” allows people to approach while seated in patrol vehicle, and/or fails to handcuff when appropriate. The trainee conducts poor searches and/or fails to maintain a position of advantage that could prevent attack or escape.", "The trainee follows acceptable safety procedures with suspicious persons, suspects, and prisoners as outlined in HPM 70.6.", "The trainee foresees potential danger and eliminates or controls it. The trainee maintains a position of advantage even in the most demanding situations. The trainee is alert to changing situations and prevents opportunities for danger to develop."], [24, "Performance", "Control of conflict: Voice command and presence", "Control of Conflict: Voice Command and Presence. This category evaluates the trainee’s ability to gain and maintain control of situations through verbal command and instruction.", "The trainee speaks too softly or timidly. The trainee speaks too loudly. The trainee confuses or angers the listener by what is said and/or how it is said. The trainee speaks when inappropriate. The trainee is unable to use a confident/commanding tone of voice.", "The trainee speaks with authority in a calm, clear voice. The trainee makes a proper selection of words and possesses the knowledge of how and when to use them. The trainee’s commands usually result in compliance.", "The trainee completely controls situations with voice tone, word selection, inflection, and command bearing. The trainee restores order even in the most trying situations through voice and presence."], [25, "Performance", "Control of conflict: Use of Force", "Control of Conflict: Physical Control Methods. This category evaluates the trainee’s ability to use the proper level of force for any given situation.", "The trainee uses too little or too much force for the situation. The trainee is physically unable to perform the task. The trainee does not use proper restraints or is unable to properly use restraints.", "The trainee obtains and maintains control through use of the proper amount of force. The trainee uses restraints effectively.", "The trainee possesses an excellent knowledge and skill level in the use of restraints. The trainee is extremely adept in the proper use of force for the situation."], [26, "Performance", "Problem-solving techniques/Decision making/Judgment", "Problem Solving/Decision Making/Judgment. This category evaluates the trainee’s performance in terms of ability to perceive problems accurately, form valid conclusions, arrive at sound judgments, and make proper decisions.", "The trainee acts without thought or good reason. The trainee is indecisive and/or immature. The trainee is unable to reason through a problem and come to a conclusion. The trainee cannot recall previous solutions and apply them in similar situations.", "The trainee is able to reason through a problem and come to an acceptable conclusion in routine situations. The trainee makes reasonable decisions based on information available. The trainee perceives situations as they really are. The trainee makes decisions without assistance.", "The trainee is able to reason through even the most complex situation and reaches the appropriate conclusions. The trainee has excellent perception. The trainee anticipates problems and prepares resolutions in advance. The trainee relates past solutions to present situations."], [27, "Performance", "Traffic management skills", "Traffic Management Skills. This category evaluates the trainee’s ability to apply and perform proper traffic management techniques.", "The trainee fails to recognize traffic hazards. The trainee does not detect or avoids taking action on observed violations or incidents. The trainee initiates unsafe enforcement stops. The trainee is unable to identify or utilize effective traffic control measures. The trainee fails to recognize the importance of providing assistance to disabled motorists.", "The trainee recognizes traffic hazards and initiates routine activity. The trainee is aware of the need for traffic stops and identifies and provides assistance to disabled motorists. The trainee effectively utilizes traffic control measures.", "The trainee consistently demonstrates the ability to recognize traffic hazards and acts properly without assistance. The trainee demonstrates outstanding skill in detecting violations and takes appropriate enforcement action. Enforcement stops are initiated safely and efficiently. The trainee readily identifies disabled motorists and provides prompt assistance."], [28, "Performance", "Emergency incident management skills", "Emergency Incident Management Skills. This category evaluates the trainee’s ability to respond to and handle emergency incidents.", "The trainee consistently fails to determine and prioritize needs during emergency incidents. The trainee fails to make proper notification and take command of the situation. The trainee fails to set up a command post and protect the scene. The trainee is unable to coordinate the efforts of support agency personnel. The trainee fails to evaluate resource requirements.", "The trainee determines and prioritizes needs during emergency incidents. The trainee sets up a command post, makes required notifications, and takes command of the incident. The trainee is able to coordinate and direct support agency personnel. The trainee properly evaluates the incident. The trainee requests needed resources.", "The trainee consistently demonstrates the ability to prioritize resources and personnel requirements during all emergency incidents. The trainee immediately establishes a perimeter, makes the necessary notifications, protects the scene, and assumes command responsibility. The trainee effectively coordinates the deployment of needed resources."], [29, "Performance", "Emergency medical skills", "Emergency Medical Skills. This category evaluates the trainee’s ability to provide emergency medical care.", "The trainee consistently fails to carry required emergency medical responder (EMR) equipment. The trainee is unable to recognize urgent medical needs and is ineffective in providing emergency treatment. The trainee panics and/or becomes disorganized. The trainee fails to prioritize injuries and request appropriate resources.", "The trainee always carries required EMR equipment. The trainee recognizes medical needs and provides adequate emergency treatment. The trainee prioritizes injuries and requests appropriate resources.", "The trainee immediately recognizes medical needs and provides immediate emergency treatment skillfully and efficiently. The trainee prioritizes injuries and requests appropriate resources."], [30, "Performance", "Radio: Use of codes and procedures", "Radio: Use of Codes and Procedures. This category evaluates the trainee’s use of communications equipment in accordance with departmental policy and procedure.", "The trainee violates departmental policy concerning use of communications equipment. The trainee does not follow procedures or follows wrong procedures. The trainee does not understand or use proper codes/language.", "The trainee follows departmental policy and accepted procedures. The trainee has a good working knowledge of the most-often used codes/language.", "The trainee always follows proper procedure. The trainee adheres to departmental policy in every instance. The trainee has a superior working knowledge of all codes/language and applies that knowledge when using communication equipment."], [31, "Performance", "Radio: Comprehension/Articulation", "Radio: Comprehension/Articulation. This category evaluates the trainee’s ability to communicate with others via the telecommunications network, pay attention to radio traffic, and understand the information transmitted.", "The trainee repeatedly misses their own call sign and is unaware of traffic in adjoining beats. The trainee requires the dispatcher to repeat radio transmissions or does not accurately comprehend transmissions. The trainee does not pre-plan transmissions. The trainee over- or under-modulates, improperly uses microphone, and/or speaks too rapidly or too slowly.", "The trainee copies their own radio transmissions and is normally aware of radio traffic directed to adjoining beats. The trainee uses proper procedure with clear, concise, and complete transmissions. The trainee receives few complaints from the communications center regarding articulation skills.", "The trainee is aware of their own radio transmissions and what is occurring throughout the service area. The trainee recalls previous transmissions and uses that information to their advantage. The trainee’s transmissions are clear, calm, concise, and complete in even the most stressful situations. The trainee’s transmissions are well thought-out and do not have to be repeated."], [32, "Knowledge", "MDC: Use/Comprehension/Articulation", "Mobile Digital Computer: Use/Comprehension/Articulation. This category evaluates the trainee’s ability to operate the computer and receive and send clear communications via the Mobile Digital Computer.", "The trainee does not understand dispatch and/or message formats. The trainee does not recognize messages addressed to their unit. The trainee fails to properly update the status of the unit. The trainee is unfamiliar with formats necessary for routine operation and inquiries. The trainee is unable to compose understandable text, does not recognize officer safety issues involved in dispatch calls, or violates Federal Communications Commission (FCC) regulations and/or Department policy.", "The trainee understands the operation and formats required for all function and status keys. The trainee can communicate by administrative message. The trainee understands message, dispatch, and database formats used daily by officers. The trainee properly updates status. The trainee readily recognizes officer safety issues involved in the disposition of calls. The trainee is clear and brief in transmissions and adheres to FCC regulations and Department policy.", "The trainee consistently recalls dispatch information without running summaries. The trainee can make rarely used free-format inquiries from memory. The trainee understands Computer Aided Dispatch, Department of Motor Vehicles, and California Law Enforcement Telecommunications System error messages. The trainee is proficient in the use of all function keys, multiple administrative messages, and be-on-the-lookout bulletin retrieval."], [33, "Knowledge", "Knowledge of Department policies and procedures", "Knowledge of Department Policies and Procedures. This category evaluates the trainee’s knowledge of departmental policies/procedures (e.g., pursuit policy, shooting policy, forcible stops, occupational safety, sick leave, tardiness) and the ability to apply this knowledge under field conditions.", "The trainee fails to display knowledge of Department policies, regulations, and/or procedures, or violates same.", "The trainee is familiar with most commonly applied Department policies, regulations, and procedures and complies with same.", "The trainee has an excellent working knowledge of Department policies, regulations, and procedures, including those less known and seldom used."], [34, "Knowledge", "Knowledge of Area policies and procedures", "Knowledge of Area Policies and Procedures. This category evaluates the trainee’s knowledge of Area policies and procedures, including standard operating procedures (e.g., supervisory notification, beat responsibility, booking procedures, court policy).", "The trainee consistently demonstrates a lack of the requisite working knowledge of even the most basic Area policies, regulations, and procedures.", "The trainee displays a reasonable working knowledge of most Area policies, regulations, and procedures. The trainee complies with same.", "The trainee consistently demonstrates a superior working knowledge of Area policies, regulations, and procedures. The trainee complies with same."], [35, "Knowledge", "Knowledge of criminal statutes", "Knowledge of Criminal Statutes. This category evaluates the trainee’s knowledge of criminal statutes (e.g., Penal, Vehicle, Welfare and Institutions, Business and Professions, Health and Safety, and all city/county codes) and their ability to apply that knowledge to field situations.", "The trainee does not know the elements of basic code sections. The trainee does not recognize criminal offenses when encountered or makes mistakes relative to whether or not crimes have been committed, and if so, which crimes. The trainee incorrectly identifies violation(s) and provides incorrect court assignments or dates.", "The trainee recognizes commonly encountered criminal offenses and applies appropriate code sections. The trainee recognizes differences between criminal and non-criminal activity. The trainee correctly identifies violations and/or provides correct court assignments and dates.", "The trainee has outstanding knowledge of all codes and applies that knowledge to normal and unusual activity quickly and effectively. The trainee is able to consistently locate lesser known code sections in reference material."], [36, "Knowledge", "Knowledge of criminal procedure", "Knowledge of Criminal Procedure. This category evaluates the trainee’s knowledge of criminal procedures, including laws of arrest, search and seizure, warrants, and juvenile law. It also evaluates the trainee’s ability to apply those procedures to field situations.", "The trainee violates procedural requirements. The trainee attempts to conduct illegal searches and/or fails to search when appropriate. The trainee attempts to seize evidence illegally and/or arrest unlawfully.", "The trainee follows required procedures in commonly encountered situations. The trainee conducts proper searches and seizes evidence legally. The trainee makes arrests within guidelines.", "The trainee follows required procedures in all cases, accurately applying law relative to searching, seizing evidence, releasing information, and effecting arrests."], [37, "Knowledge", "Knowledge of Vehicle Code", "Knowledge of Vehicle Code. This category evaluates the trainee’s knowledge of the California Vehicle Code (CVC), including Divisions 10 and 11. It also evaluates the trainee’s ability to distinguish between “may take” and “shall take” violations, and the ability to locate information and to apply knowledge in field situations.", "The trainee consistently demonstrates a lack of knowledge of even the most basic vehicle code violations. The trainee is unable to locate information when necessary. The trainee does not recognize or incorrectly identifies violations when committed.", "The trainee knows commonly used sections of the CVC and recognizes violations of same.", "The trainee consistently displays superior knowledge of traffic codes, including lesser known or seldom used CVC sections and is quick to recognize violations of same. The trainee effectively applies appropriate sections based upon observations."]];
+// Plain-language search terms per category (for the category finder)
+const KW={
+1:'feedback criticism correction coaching accepts takes correction argues excuses defensive willing to learn learns from mistakes applies feedback receptive',
+2:'attitude motivation motivated drive interest disinterested career dedication willing to learn eager initiative studies asks questions',
+3:'integrity honesty honest truthful ethics character accountability responsibility mediocrity lying',
+4:'leadership takes charge command presence empathy de-escalate lead influence',
+5:'appearance uniform grooming dress demeanor equipment boots leather gear',
+6:'public citizens community courtesy rapport attitude with violator motorist suspect treatment professional rude explain demeanor customer service',
+7:'coworkers partner officers sergeant department members teamwork team dispatcher staff',
+8:'community outreach events school presentations nonenforcement',
+9:'allied agencies sheriff police fire caltrans tow medics ems coroner support services',
+10:'driving routine patrol driving lane speed mirrors backing parking vehicle operation',
+11:'code 3 pursuit emergency driving lights siren high speed response stress driving',
+12:'orientation maps directions geography beat knowledge response time find location lost',
+13:'forms citations cite paperwork 555 notice to appear tow form accuracy completeness',
+14:'report writing organization details narrative collision report elements',
+15:'grammar spelling neatness report writing typos legibility',
+16:'report time takes too long late reports timeliness',
+17:'field performance routine calls non-stress tasks multitasking',
+18:'stress pressure high stress calls panic composure freezes',
+19:'investigation investigative evidence collision investigation scene follow up',
+20:'interview interrogation questioning witnesses statements dui interview',
+21:'self initiated proactive stops violations enforcement initiative looking for violations activity',
+22:'officer safety vehicle stop stops approach positioning standing between vehicles traffic weapon hand cover awareness violator in sight',
+23:'suspect high risk felony stop pat search frisk in custody prisoner handcuffed custody controlling suspect transport',
+24:'voice commands command presence verbal control tone timid controlling suspect',
+25:'use of force physical control handcuffing restraints takedown hands on control holds controlling suspect',
+26:'judgment decision making problem solving common sense decisions reasoning',
+27:'traffic management traffic control hazards unsafe stop location flares enforcement stop selection',
+28:'emergency incident scene management major collision fire hazmat command',
+29:'first aid medical cpr emergency medical injured',
+30:'radio codes procedures clearing dispatch radio traffic 10 codes communications policy',
+31:'radio comprehension articulation call sign listening transmissions radio traffic clear speech dispatcher repeats',
+32:'mdc computer terminal status messages mobile data',
+33:'department policy procedures hpm pursuit policy shooting policy general orders',
+34:'area policy sop local procedures area orders',
+35:'criminal statutes penal code laws elements crimes',
+36:'criminal procedure arrest search seizure miranda laws of arrest',
+37:'vehicle code cvc violations vc sections traffic law'
+};
+// Quick phrases per category: [good, needs work]
+const PHR={
+1:[['Accepted correction without argument','Applied feedback on the next contact','Asked how to improve'],['Argued when corrected','Made excuses for a mistake','Repeated an error after correction']],
+2:[['Showed strong motivation','Studied on own time','Sought out new tasks'],['Appeared disinterested','Had to be prompted to take action','Treated duties as just a job']],
+3:[['Took responsibility for an error','Was accurate and truthful','Held to high standards'],['Did not take ownership of an error','Accepted a mediocre result','Shaded facts in an explanation']],
+4:[['Took charge of the scene','Showed empathy to those involved','Calmed a tense situation'],['Hesitated to take charge','Escalated a situation','Lacked command presence']],
+5:[['Uniform and equipment in good order','Professional demeanor'],['Uniform not to standard','Equipment missing or not ready']],
+6:[['Built rapport with the violator','Explained actions clearly','Remained courteous under pressure'],['Abrupt with the public','Did not explain the reason for the stop','Lost composure with a member of the public']],
+7:[['Worked well with partner units','Communicated well with the sergeant'],['Did not coordinate with partner units','Unprofessional with a coworker']],
+8:[['Engaged well with community members'],['Avoided a community contact']],
+9:[['Coordinated well with allied agency','Worked smoothly with tow/EMS'],['Poor coordination with allied agency']],
+10:[['Smooth, safe routine driving','Good lane position and mirror use'],['Followed too closely','Rolled through a stop','Inattentive while driving']],
+11:[['Controlled Code 3 response safely','Cleared intersections properly'],['Drove too fast for conditions on Code 3','Did not clear intersections']],
+12:[['Found locations quickly','Knew the beat well'],['Got lost en route','Slow response from poor route choice']],
+13:[['Citations complete and accurate','Forms done correctly the first time'],['Errors on a citation','Missing information on a form']],
+14:[['Report well organized','Included all needed details'],['Report missing key elements','Narrative out of order']],
+15:[['Clean, error-free writing'],['Spelling and grammar errors in report','Report hard to read']],
+16:[['Completed report in good time'],['Took too long to complete report']],
+17:[['Handled routine calls independently','Managed multiple tasks well'],['Needed prompting on routine tasks','Overlooked routine steps']],
+18:[['Stayed calm under pressure','Made sound decisions in a stressful call'],['Froze under stress','Became flustered on a high-stress call']],
+19:[['Thorough scene investigation','Identified and preserved evidence'],['Missed evidence at the scene','Incomplete investigation']],
+20:[['Asked effective questions','Obtained a clear statement'],['Leading or unclear questions','Missed key questions']],
+21:[['Proactively stopped violators','Sought out primary collision factor violations','Recognized suspicious activity'],['Passed on obvious violations','Low self-initiated activity','Ignored suspicious activity']],
+22:[['Good positioning on stops','Kept violator in sight','Kept weapon hand free'],['Stood between vehicles','Turned back on violator','Exposed self to passing traffic']],
+23:[['Thorough pat search','Maintained control of person in custody','Proper high-risk stop tactics'],['Missed items on pat search','Allowed subject to approach while seated in unit','Poor custody control']],
+24:[['Clear, confident commands','Gained compliance verbally'],['Commands too soft or unclear','Tone escalated the subject','Hesitant verbal control']],
+25:[['Used appropriate level of force','Handcuffed properly and safely'],['Too little force to gain control','Improper handcuffing technique','Too much force for the situation']],
+26:[['Made sound decisions','Reasoned through a problem well'],['Acted without thinking it through','Was indecisive']],
+27:[['Selected safe stop locations','Good traffic control at the scene','Recognized traffic hazards'],['Initiated stop in an unsafe location','Poor traffic control at the scene','Did not recognize a hazard']],
+28:[['Managed the incident scene well','Requested resources early'],['Slow to organize the scene','Did not request needed resources']],
+29:[['Provided appropriate first aid','Assessed injuries properly'],['Hesitated to provide first aid','Incomplete patient assessment']],
+30:[['Correct codes and procedures','Cleared with dispatch promptly'],['Did not clear with dispatch','Used incorrect codes','Did not follow radio procedure']],
+31:[['Clear, concise transmissions','Monitored radio traffic well'],['Missed own call sign','Did not pre-plan transmissions','Dispatcher had to repeat traffic']],
+32:[['Kept unit status updated','Used MDC efficiently'],['Did not update unit status','Missed MDC messages']],
+33:[['Knew department policy well','Applied policy correctly'],['Unfamiliar with department policy','Misapplied policy']],
+34:[['Knew Area procedures'],['Unfamiliar with Area procedures']],
+35:[['Identified the correct statute','Knew elements of the crime'],['Could not identify the correct statute','Missed elements of the crime']],
+36:[['Correct arrest and search procedure','Proper Miranda use'],['Unsure of laws of arrest','Improper search procedure']],
+37:[['Strong Vehicle Code knowledge','Cited correct VC sections'],['Wrong VC section cited','Did not recognize a violation']]
+};
+
+const KEY='dor115a.offline.v1';
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const fresh=()=>({mode:'in',bestCat:'',bestEx:'',bestRate:'',bestSug:null,worstCat:'',worstEx:'',worstRate:'',worstSug:null,obs:[],remStatus:'none',remedial:'',out:null,date:today()});
+let S=Object.assign({phase:'Phase I'},fresh());
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s)S=Object.assign(S,s)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const catBy=n=>CATS.find(c=>String(c[0])===String(n));
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),1700)}
+
+$$('[data-seg]').forEach(g=>{const k=g.dataset.seg;[...g.children].forEach(b=>{const v=b.dataset.val||b.textContent;b.classList.toggle('on',S[k]===v);b.onclick=()=>{S[k]=v;[...g.children].forEach(x=>x.classList.toggle('on',x===b));save()}})});
+
+// ---------- category picker ----------
+let pickFor=null,obsCat='';
+function pickerLabel(n,ph){const c=catBy(n);return c?`<b>${c[0]}. ${esc(c[2])}</b><small>${esc(c[1])}</small>`:`<span class="ph">${ph}</span>`}
+function stdBox(n,which){const c=catBy(n);if(!c)return'';
+  const lv=which==='best'?[['Superior (7)',c[6],'var(--ok)'],['Acceptable (4)',c[5],'var(--muted)']]:[['Unacceptable (1)',c[4],'var(--bad)'],['Acceptable (4)',c[5],'var(--muted)']];
+  return `<details class="std"><summary>115A standard for this category</summary><p style="margin:8px 0 0">${esc(c[3])}</p>${lv.map(([t,x,col])=>`<div class="lvl"><b style="color:${col}">${t}</b>${esc(x)}</div>`).join('')}</details>`}
+function renderCard(w){$('#'+w+'Pick').innerHTML=pickerLabel(S[w+'Cat'],'Tap to find a category');$('#'+w+'Std').innerHTML=stdBox(S[w+'Cat'],w);renderRate(w);renderPhr(w)}
+function renderObsPick(){$('#obsPick').innerHTML=pickerLabel(obsCat,'None — tap to find one');renderPhr('obs')}
+function renderSel(){renderCard('best');renderCard('worst');renderObsPick()}
+const STOP=new Set('the a an and or of to in on for with was were is did not no trainee their they at by from as it this that'.split(' '));
+function words(t){return t.toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(x=>x&&!STOP.has(x))}
+function searchCats(q){const qs=words(q);if(!qs.length)return[];
+  return CATS.map(c=>{const nm=c[2].toLowerCase(),kw=(KW[c[0]]||'').toLowerCase(),tx=(c[3]+' '+c[4]+' '+c[5]+' '+c[6]).toLowerCase();let sc=0;
+    if(String(c[0])===q.trim())sc+=50;
+    if(kw.includes(q.trim().toLowerCase())||nm.includes(q.trim().toLowerCase()))sc+=12;
+    for(const w of qs){const re=new RegExp('\\b'+w.replace(/s$/,''));if(re.test(nm))sc+=5;if(re.test(kw))sc+=4;if(re.test(tx))sc+=1}
+    return[c,sc]}).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0])}
+function curSel(){return pickFor==='obs'?obsCat:S[pickFor+'Cat']}
+function itemHtml(c,why){return`<button class="pk-i ${String(curSel())===String(c[0])?'on':''}" onclick="choose(${c[0]})"><b>${c[0]}.</b> ${esc(c[2])}<small>${esc(why||c[3].replace(/^[^.]*\.\s*/,''))}</small></button>`}
+function renderPicker(){const q=$('#pkQ').value;
+  if(!q.trim()){let h='',g='';if(pickFor==='obs')h+=`<button class="pk-i" onclick="choose('')"><b>No specific category</b></button>`;
+    for(const c of CATS){if(c[1]!==g){g=c[1];h+=`<div class="pk-g">${esc(g)}</div>`}h+=itemHtml(c)}$('#pkList').innerHTML=h;$('#pkAsk').innerHTML='';return}
+  const r=searchCats(q);
+  $('#pkAsk').innerHTML='';
+  $('#pkList').innerHTML=r.length?r.map(c=>itemHtml(c)).join(''):'<p class="hint" style="text-align:center;margin-top:20px">No close matches — try different words.</p>'}
+function openPicker(w){pickFor=w;$('#pkQ').value='';renderPicker();$('#sheet').classList.add('on');document.body.style.overflow='hidden';setTimeout(()=>$('#pkQ').focus(),50)}
+function closePicker(){$('#sheet').classList.remove('on');document.body.style.overflow=''}
+$('#pkQ').oninput=renderPicker;
+function choose(n){n=String(n||'');
+  if(pickFor==='obs'){obsCat=n;renderObsPick()}
+  else{if(S[pickFor+'Cat']!==n){S[pickFor+'Rate']='';S[pickFor+'Sug']=null}S[pickFor+'Cat']=n;save();renderCard(pickFor)}
+  closePicker()}
+async function askCats(){const q=$('#pkQ').value.trim();if(!q)return;
+  if(!sampleFn){try{sampleFn=await window.claude?.use?.('sample')}catch(e){}}
+  if(!sampleFn){$('#pkAsk').innerHTML='<div class="askbox err">Asking Claude isn\'t available in this view.</div>';return}
+  $('#pkAsk').innerHTML='<div class="askbox">Asking Claude…</div>';
+  const list=CATS.map(c=>`${c[0]}. ${c[2]}: ${c[3]}`).join('\n');
+  const prompt=`A CHP Field Training Officer wants to know which CHP 115A Daily Observation Report performance category best covers this: "${q}".\n\nCategories:\n${list}\n\nReturn ONLY JSON, no other text: {"matches":[{"n":<category number>,"why":"<one short sentence on why it fits>"}]} with the 1 to 3 best matches, best first.`;
+  try{const r=await sampleFn(prompt,{modelTier:'quick'});const m=(r.text.match(/\{[\s\S]*\}/)||[''])[0];const j=JSON.parse(m);
+    const items=(j.matches||[]).map(x=>[catBy(x.n),x.why]).filter(x=>x[0]);
+    $('#pkAsk').innerHTML=items.length?`<div class="pk-g">Claude suggests</div>${items.map(([c,why])=>itemHtml(c,why)).join('')}<div class="pk-g">Search matches</div>`:'<div class="askbox">Claude couldn\'t find a clear match. Try different words.</div>'}
+  catch(e){$('#pkAsk').innerHTML='<div class="askbox err">'+(e?.code==='rate_limited'?'Too many requests. Try again in a minute.':'Couldn\'t ask Claude right now.')+'</div>'}}
+
+// ---------- quick phrases ----------
+function renderPhr(w){const el=$('#'+w+'Phr');const n=w==='obs'?obsCat:S[w+'Cat'];const P=PHR[n];if(!P){el.innerHTML='';return}
+  if(w==='best')el.innerHTML=`<div class="chiplbl">Tap to add</div>`+P[0].map((t,i)=>`<button class="chip g" onclick="addPhrase('best',${i})">+ ${esc(t)}</button>`).join('');
+  else if(w==='worst')el.innerHTML=`<div class="chiplbl">Tap to add</div>`+P[1].map((t,i)=>`<button class="chip b" onclick="addPhrase('worst',${i})">+ ${esc(t)}</button>`).join('');
+  else el.innerHTML=`<div class="chiplbl">Tap to add as an observation</div>`+P[0].map((t,i)=>`<button class="chip g" onclick="phraseObs('good',${i})">+ ${esc(t)}</button>`).join('')+P[1].map((t,i)=>`<button class="chip b" onclick="phraseObs('bad',${i})">+ ${esc(t)}</button>`).join('')}
+function addPhrase(w,i){const t=PHR[S[w+'Cat']][w==='best'?0:1][i];const el=$('#'+w+'Ex');const cur=el.value.trim();
+  if(cur.toLowerCase().includes(t.toLowerCase())){toast('Already added');return}
+  el.value=cur?cur.replace(/[.;,]?$/,'; ')+t.charAt(0).toLowerCase()+t.slice(1):t;S[w+'Ex']=el.value;save();toast('Added')}
+function phraseObs(type,i){const t=PHR[obsCat][type==='good'?0:1][i];S.obs.push({type,text:t,cat:obsCat});save();renderObs();toast(type==='good'?'Added as good':'Added as needs work')}
+
+// ---------- ratings ----------
+function renderRate(w){const el=$('#'+w+'Rate');if(!S[w+'Cat']){el.innerHTML='';return}
+  const r=S[w+'Rate'],sg=S[w+'Sug'];
+  el.innerHTML=`<div class="rate"><div class="rl"><label class="f" style="margin:0">115A rating</label></div>
+  <div class="scale">${[1,2,3,4,5,6,7].map(v=>`<button class="${String(r)===String(v)?'on':''} ${!r&&sg&&+sg.r===v?'sug':''}" onclick="setRate('${w}',${v})">${v}</button>`).join('')}</div>
+  <div class="cap"><span>Unacceptable</span><span>Acceptable</span><span>Superior</span></div>
+  ${sg?`<div class="why">Suggested <b>${sg.r}</b>${sg.why?' — '+esc(sg.why):''}${r?'':' Tap the number to accept.'}</div>`:''}</div>`}
+function setRate(w,v){S[w+'Rate']=String(S[w+'Rate'])===String(v)?'':String(v);save();renderRate(w)}
+function phaseNote(){return `The trainee is in ${S.phase||'Phase I'} of field training (the program runs Phase I through Phase IV, with Extension I and II for trainees who need more time). Early phases call for a coaching tone and corrections framed as learning steps; later phases and extensions expect independent, consistent performance, so corrections are firmer and may note that the skill should already be established. The 115A standard itself does not change by phase.`}
+async function suggestRating(w){const n=S[w+'Cat'];const c=catBy(n);if(!c)return;const btn=$('#'+w+'SugBtn');
+  if(!sampleFn){try{sampleFn=await window.claude?.use?.('sample')}catch(e){}}
+  if(!sampleFn){toast('Suggestions aren\'t available in this view');return}
+  const notes=[S[w+'Ex'],...S.obs.filter(o=>o.cat===n).map(o=>`[${o.type==='good'?'good':'needs work'}] ${o.text}`)].filter(x=>x&&x.trim()).join('; ');
+  if(!notes){toast('Add what happened first');return}
+  btn.textContent='Thinking…';btn.disabled=true;
+  const prompt=`Suggest a CHP 115A Daily Observation Report rating (1 to 7) for a trainee's ${w==='best'?'most':'least'} acceptable area of performance today.\nScale: 1 = unacceptable, 4 = acceptable, 7 = superior; 2-3 and 5-6 fall between.\n${phaseNote()}\nCategory ${c[0]} — ${c[2]}\nStandard for 1: ${c[4]}\nStandard for 4: ${c[5]}\nStandard for 7: ${c[6]}\nFTO's notes: ${notes}\n\nJudge only from the notes against the standards. Return ONLY JSON: {"rating":<1-7>,"why":"<one short sentence>"}`;
+  try{const r=await sampleFn(prompt,{modelTier:'quick'});const j=JSON.parse((r.text.match(/\{[\s\S]*\}/)||[''])[0]);const v=Math.round(+j.rating);
+    if(v>=1&&v<=7){S[w+'Sug']={r:v,why:j.why||''};save()}else toast('No clear suggestion')}
+  catch(e){toast(e?.code==='rate_limited'?'Too many requests — try again shortly':'Couldn\'t get a suggestion')}
+  finally{renderRate(w)}}
+['bestEx','worstEx','remedial'].forEach(id=>{const el=$('#'+id);el.value=S[id]||'';el.oninput=()=>{S[id]=el.value;save()}});
+
+// observations
+function renderObs(){$('#obsList').innerHTML=S.obs.map((o,i)=>{const c=catBy(o.cat);return`<li class="${o.type}"><span class="dot">${o.type==='good'?'Good':'Needs work'}</span><span class="tx">${esc(o.text)}${c?`<small>Cat ${c[0]} · ${esc(c[2])}</small>`:''}</span><button aria-label="Remove" onclick="delObs(${i})">×</button></li>`}).join('')}
+function addObs(type){const t=$('#obsText').value.trim();if(!t){toast('Type what you saw first');$('#obsText').focus();return}
+  S.obs.push({type,text:t,cat:obsCat});save();$('#obsText').value='';obsCat='';renderObsPick();renderObs();toast(type==='good'?'Added as good':'Added as needs work')}
+function delObs(i){S.obs.splice(i,1);save();renderObs()}
+
+// generation
+function refName(){return'the trainee'}
+function catBlock(n,levels){const c=catBy(n);if(!c)return'';const m={1:c[4],4:c[5],7:c[6]};return `Category ${c[0]} — ${c[2]}\nDefinition: ${c[3]}\n`+levels.map(l=>`115A standard for a ${l}: ${m[l]}`).join('\n')}
+function buildPrompt(){
+  const ref=refName(),L=[],secs=[];
+  L.push(`You are helping a California Highway Patrol Field Training Officer (FTO) write the narrative of a CHP 115A Daily Observation Report (DOR) for a trainee in the Field Training and Evaluation Program (FTEP). The FTO gives you the best and worst areas of the day and a list of other observations. Write the narrative, measuring what the FTO saw against the CHP 115A category standards provided.`);
+  L.push(`\nWRITING RULES
+- Use ONLY the facts the FTO gives. Never invent locations, times, call types, statute or code sections, quotes, or outcomes. If a reader would expect a detail that is missing, use a short bracketed placeholder such as [location] or [time].
+- Refer to the trainee as "${ref}". Third person, past tense, plain, objective, professional language suitable for a personnel training record.
+- Describe observable behavior first (what the trainee did or said), then tie it to the category's 115A standard: explain how it met or exceeded the standard (best) or fell short of it (worst). Paraphrase the standard; do not paste it.
+- For shortcomings, state what the correct action would have been. Mention feedback or training only if the FTO's notes or remedial training entry say it happened.
+- Work each "other observation" into the narrative. If it belongs to the best or worst category, fold it into that section (a NEEDS WORK note in the worst category also feeds its suggested corrections); otherwise put it in General/Noteworthy events, citing its category number in parentheses when one is given, e.g. "(Cat 13)".
+- MOST ACCEPTABLE section: make this the fullest, most detailed section of the narrative, three paragraphs. Paragraph 1: walk through what ${ref} did step by step, in the order it happened, using every detail in the FTO's notes and any GOOD observations in this category (actions, words, decisions, sequence). Paragraph 2: explain in depth how that performance met or exceeded the 115A standard, element by element (e.g. officer safety, control of the scene, communication, judgment, professionalism, public trust, efficiency), and why it mattered: the effect on the safety of ${ref}, the FTO and the public, on the outcome of the contact, and on the Department's image. Where it fits, note how this compares with what is expected at ${ref}'s current phase. Use rich, professional evaluative language that a training record would use, such as "demonstrated", "consistently", "effectively", "sound judgment", "command presence". Paragraph 3: a genuine, specific commendation that recognizes the behavior, states that it reflects well on ${ref} and the Department, and encourages ${ref} to keep building on it as training continues. Elaborate with explanation, standard-based reasoning and impact, never with new facts: do not add actions, locations, times, quotes or outcomes the FTO did not give.
+- LEAST ACCEPTABLE section: after describing the shortcoming, add a line starting "Suggested corrections:" followed by two to four specific, behavior-based steps ${ref} can take next shift to meet the 115A standard (what to do differently, what to practice, what to review). Base them on the category's 115A standard and the FTO's notes. Do not cite manual, policy or code section numbers unless they appear in the standard text provided. Write them as short sentences in one paragraph, not a bulleted list.
+- For each NEEDS WORK observation that lands in General/Noteworthy events, follow it with one brief suggested correction. For each GOOD observation there, write two or three sentences: what was done, how it met the category standard, and a brief word of recognition.
+- PHASE: ${phaseNote()} Match the tone and firmness of the narrative and corrections to this phase.
+- Be specific and concise. No filler, no exaggeration, no speculation about character or motives. No markdown formatting inside sections.`);
+  if(S.bestCat){secs.push('MOST ACCEPTABLE');L.push(`\nBEST OF THE DAY (most acceptable area of performance)\n${catBlock(S.bestCat,[4,7])}\n${S.bestRate?`FTO's rating: ${S.bestRate}\n`:''}FTO's notes: ${S.bestEx.trim()||'(none given — write a short statement and use a bracketed placeholder for the specific incident)'}`)}
+  if(S.worstCat){secs.push('LEAST ACCEPTABLE');L.push(`\nWORST OF THE DAY (least acceptable area of performance)\n${catBlock(S.worstCat,[1,4])}\n${S.worstRate?`FTO's rating: ${S.worstRate}\n`:''}FTO's notes: ${S.worstEx.trim()||'(none given — write a short statement and use a bracketed placeholder for the specific incident)'}`)}
+  if(S.obs.length){L.push(`\nOTHER OBSERVATIONS`);S.obs.forEach((o,i)=>{const c=catBy(o.cat);L.push(`${i+1}. [${o.type==='good'?'GOOD':'NEEDS WORK'}]${c?` Cat ${c[0]} ${c[2]} (standard: ${c[3]})`:''} — ${o.text}`)});
+    const other=S.obs.filter(o=>!o.cat||(o.cat!==S.bestCat&&o.cat!==S.worstCat));if(other.length)secs.push('GENERAL/NOTEWORTHY EVENTS')}
+  if(S.remStatus!=='none'||S.remedial.trim()){secs.push('REMEDIAL TRAINING');L.push(`\nREMEDIAL TRAINING (status: ${S.remStatus==='complete'?'complete':S.remStatus==='todo'?'remediation to be performed':'not specified'})\nFTO's notes: ${S.remedial.trim()||'(none given)'}`)}
+  const needR=[S.bestCat&&!S.bestRate&&'BEST',S.worstCat&&!S.worstRate&&'WORST'].filter(Boolean);
+  if(needR.length){secs.push('RATINGS');L.push(`\nRATINGS: The FTO has not chosen a 1-7 rating for: ${needR.join(' and ')}. In the final RATINGS section, suggest one using the standards above (1 unacceptable, 4 acceptable, 7 superior), one line each, exactly in the form "BEST: <number> — <one short reason>" / "WORST: <number> — <one short reason>". This section is for the FTO only and is not part of the narrative.`)}
+  L.push(`\nOUTPUT FORMAT\nReturn exactly these sections in this order, each starting with its header on its own line as "### HEADER", followed by the narrative (MOST ACCEPTABLE: three full paragraphs; other sections: one to three short paragraphs). Nothing before the first header or after the last section.\n${secs.map(s=>'### '+s).join('\n')}`);
+  return{prompt:L.join('\n'),secs};
+}
+let sampleFn=null,busy=false,ctrl=null;
+
+function parseOut(t){const P=[],re=/^###\s*(.+)$/gm;let m,last=null;while((m=re.exec(t))){if(last)last.body=t.slice(last.end,m.index).trim();last={title:m[1].trim(),end:re.lastIndex};P.push(last)}if(last)last.body=t.slice(last.end).trim();if(!P.length&&t.trim())P.push({title:'Narrative',body:t.trim()});return P.map(p=>({title:p.title,body:p.body||''}))}
+function takeRatings(P){const r=P.find(p=>/^RATINGS/i.test(p.title));if(r){for(const [w,k] of [['best','BEST'],['worst','WORST']]){const m=r.body.match(new RegExp(k+'\\s*:\\s*(\\d)\\s*[—–-]?\\s*(.*)','i'));if(m&&!S[w+'Rate']){const v=+m[1];if(v>=1&&v<=7)S[w+'Sug']={r:v,why:m[2].trim()}}}}return P.filter(p=>!/^RATINGS/i.test(p.title))}
+function bodies(P){return P.map(p=>(p.body||'').trim()).filter(Boolean)}
+function renderOut(P){$('#out').innerHTML=P.map((p,i)=>p.body&&p.body.trim()?`<p contenteditable="true" data-i="${i}">${esc(p.body.trim())}</p>`:'').join('');
+  $$('#out p').forEach(el=>el.oninput=()=>{const i=+el.dataset.i;if(S.out&&S.out[i]){S.out[i].body=el.innerText;save()}})}
+function setMode(m){document.body.classList.toggle('out',m==='out');S.mode=m;save();window.scrollTo(0,0)}
+async function generate(){
+  if(busy){ctrl?.abort();return}
+  const{prompt}=buildPrompt();
+  const err=m=>{$('#inStatus').innerHTML='<span class="err">'+m+'</span>';$('#inStatus').scrollIntoView({behavior:'smooth',block:'center'})};
+  $('#inStatus').textContent='';
+  if(!S.bestCat&&!S.worstCat)return err('Pick a best or worst category first.');
+  if(!sampleFn){try{sampleFn=await window.claude?.use?.('sample')}catch(e){}}
+  if(!sampleFn)return err('Write-up generation isn\'t available in this view. Open the page on claude.ai to use it.');
+  busy=true;ctrl=new AbortController();$('#genBtn').textContent='Stop';
+  $('#out').innerHTML='';$('#status').textContent='Writing…';setMode('out');
+  try{
+    const res=await sampleFn(prompt,{signal:ctrl.signal,modelTier:'default',cache:false,onText:({text})=>{$('#status').textContent='';renderOut(parseOut(text).filter(p=>!/^RATINGS/i.test(p.title)))}});
+    S.out=takeRatings(parseOut(res.text));save();renderOut(S.out);renderRate('best');renderRate('worst');$('#status').textContent='';
+  }catch(e){
+    setMode('in');
+    if(e?.code==='not_granted')err('Permission to use Claude wasn\'t granted.');
+    else if(e?.code==='rate_limited')err('Too many requests. Wait a minute and try again.');
+    else if(e?.name==='AbortError'||ctrl.signal.aborted)$('#inStatus').textContent='Stopped.';
+    else err('Couldn\'t generate: '+esc(e?.message||e));
+  }finally{busy=false;$('#genBtn').textContent='Generate'}
+}
+async function copyText(t){try{await navigator.clipboard.writeText(t);toast('Copied')}catch(e){toast('Copy blocked — select the text instead')}}
+function copyAll(){if(!S.out||!S.out.length){toast('Generate the write-up first');return}copyText(bodies(S.out).join('\n\n'))}
+function resetAll(){S=Object.assign({phase:S.phase,emTo:S.emTo,emCc:S.emCc,emSig:S.emSig},fresh());save();location.reload()}
+
+
+// ---- email ----
+let mcpNs=null;
+
+function longDate(d){if(!d)return'';const[y,m,dd]=d.split('-').map(Number);return new Date(y,m-1,dd).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}
+function addrs(v){return(v||'').split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean)}
+function emailText(){return `To: ${$('#emTo').value}\n${$('#emCc').value?'CC: '+$('#emCc').value+'\n':''}Subject: ${$('#emSubj').value}\n\n${$('#emBody').value}`}
+function rline(w,lbl){const c=catBy(S[w+'Cat']);if(!c)return'';const r=S[w+'Rate']||(S[w+'Sug']?S[w+'Sug'].r:'');return `${lbl}: Cat ${c[0]}, ${c[2]}${r?` (rating ${r})`:''}\n`}
+function bodyFromOut(){const sig=(S.emSig||'').trim();const rl=rline('best','Most acceptable')+rline('worst','Least acceptable');return `Here is the Daily Observation Report narrative for ${longDate(S.date)}${S.phase?` (${S.phase})`:''}.\n\n${rl?rl+'\n':''}${bodies(S.out||[]).join('\n\n')}\n\nThank you,${sig?'\n'+sig:''}`}
+function updMailto(){const q=[];const cc=$('#emCc').value.trim();if(cc)q.push('cc='+addrs(cc).map(encodeURI).join(','));q.push('subject='+encodeURIComponent($('#emSubj').value));q.push('body='+encodeURIComponent($('#emBody').value));$('#mailtoBtn').href='mailto:'+addrs($('#emTo').value).map(encodeURI).join(',')+'?'+q.join('&')}
+function openEmail(){if(!S.out||!S.out.length){toast('Generate the write-up first');return}
+  $('#emTo').value=S.emTo||'';$('#emCc').value=S.emCc||'';$('#emSig').value=S.emSig||'';
+  $('#emSubj').value=`DOR narrative – ${longDate(S.date)}`;$('#emBody').value=bodyFromOut();$('#emStatus').textContent='';
+  updMailto();document.body.classList.add('email');window.scrollTo(0,0)}
+function closeEmail(){document.body.classList.remove('email');window.scrollTo(0,0)}
+$('#emTo').oninput=e=>{S.emTo=e.target.value;save();updMailto()};
+$('#emCc').oninput=e=>{S.emCc=e.target.value;save();updMailto()};
+$('#emSubj').oninput=updMailto;$('#emBody').oninput=updMailto;
+$('#emSig').oninput=e=>{const old=(S.emSig||'').trim();S.emSig=e.target.value;save();const b=$('#emBody');const nw=S.emSig.trim();
+  const tail='Thank you,'+(old?'\n'+old:'');if(b.value.endsWith(tail)){b.value=b.value.slice(0,-tail.length)+'Thank you,'+(nw?'\n'+nw:'');updMailto()}};
+async function gmailDraft(){
+  const st=$('#emStatus'),btn=$('#gmailBtn');const to=addrs($('#emTo').value),cc=addrs($('#emCc').value);
+  const bad=[...to,...cc].filter(a=>!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(a));
+  if(!to.length){st.innerHTML='<span class="err">Add at least one email address in To.</span>';return}
+  if(bad.length){st.innerHTML='<span class="err">Check this address: '+esc(bad[0])+'</span>';return}
+  if(!mcpNs){try{mcpNs=await window.claude?.use?.('mcp')}catch(e){}}
+  if(!mcpNs){st.innerHTML='<span class="err">Gmail isn\'t available in this view. Use Open in Mail app or Copy email instead.</span>';return}
+  btn.disabled=true;btn.textContent='Saving…';st.textContent='';
+  try{
+    const input={to,subject:$('#emSubj').value,body:$('#emBody').value};if(cc.length)input.cc=cc;
+    const r=await mcpNs.callTool('Gmail','create_draft',input);
+    const d=r&&(r.payload||r)||{};const url=d.viewUrl||(d.draft&&d.draft.viewUrl);
+    st.innerHTML='Saved to your Gmail drafts — review and send it from Gmail.'+(url?` <a href="${esc(url)}" target="_blank" rel="noopener">Open draft</a>`:'');
+  }catch(e){
+    const c=e&&e.code;
+    st.innerHTML='<span class="err">'+(c==='server_not_connected'?'Gmail isn\'t connected to your Claude account.':c==='not_granted'||c==='denied'?'Permission to use Gmail wasn\'t granted.':'Couldn\'t save the draft'+(e&&e.message?': '+esc(e.message):'.'))+'</span> Use Open in Mail app or Copy email instead.';
+  }finally{btn.disabled=false;btn.textContent='Save to Gmail drafts'}
+}
+
+
+// ---------- built-in writer (no AI needed) ----------
+const PHASE_EARLY=()=>['Phase I','Phase II'].includes(S.phase||'Phase I');
+const PHASE_EXT=()=>/Extension/.test(S.phase||'');
+const IMPACT={
+  'Professional Orientation':'Performance in this area builds the foundation for continued growth in the program and supports the trust the public and the Department place in every officer.',
+  'Appearance':'A professional appearance establishes command presence from the first moment of contact and reflects directly on the image of the Department.',
+  'Relationships':'Effective relationships of this kind build public trust, reduce conflict, and allow contacts and incidents to be handled efficiently and professionally.',
+  'Performance':'Performance at this level contributes directly to the safety of the trainee, partner officers and the motoring public, and to the efficient, professional handling of calls for service.',
+  'Knowledge':'Sound knowledge in this area allows enforcement decisions to be made correctly and confidently in the field and holds up to later review.'
+};
+const IMPACT_CAT={
+  22:'Sound officer safety practices protect the trainee, partner officers and the public, and set the tone for every enforcement contact that follows.',
+  23:'Maintaining a position of advantage with suspects and persons in custody prevents opportunities for attack or escape and keeps everyone on scene safe.',
+  24:'Clear, confident verbal control resolves most contacts without the need for physical force and keeps situations from escalating.',
+  25:'Using the correct level of force, and no more, protects the trainee, the subject and the Department.',
+  10:'Safe, controlled driving protects the trainee, the public and Department equipment, and models lawful driving for the motoring public.',
+  11:'Controlled emergency driving gets the officer to the scene quickly while protecting the public and avoiding preventable collisions.',
+  27:'Good traffic management prevents secondary collisions and keeps both the public and officers safe on the roadway.',
+  30:'Correct radio procedure keeps dispatch and partner units informed of the officer\'s status and location, which is essential to officer safety.',
+  31:'Clear, well-planned radio traffic keeps dispatch and allied units informed and avoids delays when it matters most.'
+};
+function impactFor(c){return IMPACT_CAT[c[0]]||IMPACT[c[1]]||IMPACT.Performance}
+function sent(t){t=String(t||'').trim().replace(/\s+/g,' ');if(!t)return'';t=t.charAt(0).toUpperCase()+t.slice(1);return /[.!?]$/.test(t)?t:t+'.'}
+function lc(t){t=String(t||'').trim();return t?t.charAt(0).toLowerCase()+t.slice(1).replace(/[.]$/,''):''}
+function stdLower(t){return String(t).replace(/^The trainee’s /,'the trainee’s ').replace(/^The trainee /,'the trainee ')}
+function ratingWordsBest(r){r=+r;if(r>=7)return'reached the superior level described in the 115A standard';if(r>=5)return'exceeded the acceptable level of the 115A standard and approached the superior level';return'met the acceptable level of the 115A standard'}
+function ratingWordsWorst(r){r=+r;if(!r)return'fell short of the acceptable level of the 115A standard';if(r<=1)return'was at the unacceptable level described in the 115A standard';if(r<=3)return'fell below the acceptable level of the 115A standard';return'met the minimum acceptable level of the 115A standard, but showed room for improvement'}
+function obsIn(n,type){return S.obs.filter(o=>String(o.cat)===String(n)&&o.type===type)}
+
+function writeBest(){const c=catBy(S.bestCat);if(!c)return null;const notes=S.bestEx.trim();const extra=obsIn(c[0],'good');
+  let p1=`The trainee's most acceptable area of performance during this shift was ${c[2]} (Category ${c[0]}). `;
+  p1+=notes?`I observed the following: ${sent(notes)} `:'[Describe the specific incident here.] ';
+  if(extra.length)p1+=`In addition, the trainee ${extra.map(o=>lc(o.text)).join(', and ')}. `;
+  p1+=`Throughout these contacts the trainee demonstrated the skills this category calls for and carried out the tasks in a calm, organized and professional manner.`;
+  let p2=`Under the 115A standard, acceptable performance in this category means that ${stdLower(c[5])} At the superior level, ${stdLower(c[6])} `;
+  p2+=`Based on what I observed, the trainee's performance today ${ratingWordsBest(S.bestRate)}. ${impactFor(c)} `;
+  p2+=PHASE_EARLY()?`This is a strong showing for a trainee in ${S.phase}, and it reflects good preparation and a willingness to apply what has been taught.`
+    :`This is the level of consistent, independent performance expected of a trainee in ${S.phase}, and the trainee delivered it.`;
+  const p3=`The trainee is commended for this performance. It reflects well on the trainee and on the Department, and it shows the kind of professionalism that builds public trust. I encourage the trainee to keep up this standard and to carry the same approach into every area of the job as training continues.`;
+  return{title:'MOST ACCEPTABLE',body:[p1,p2,p3].join('\n\n')}}
+
+function writeWorst(){const c=catBy(S.worstCat);if(!c)return null;const notes=S.worstEx.trim();const extra=obsIn(c[0],'bad');
+  let p1=`The trainee's least acceptable area of performance during this shift was ${c[2]} (Category ${c[0]}). `;
+  p1+=notes?`I observed the following: ${sent(notes)} `:'[Describe the specific incident here.] ';
+  if(extra.length)p1+=`In addition, the trainee ${extra.map(o=>lc(o.text)).join(', and ')}.`;
+  let p2=`Under the 115A standard, acceptable performance in this category means that ${stdLower(c[5])} The trainee's performance today ${ratingWordsWorst(S.worstRate)}. `;
+  p2+=PHASE_EARLY()?`As the trainee is in ${S.phase}, this is treated as a learning point.`
+    :PHASE_EXT()?`At this point in an extension phase, this skill is expected to be fully established, and continued deficiency in this area will need to be addressed.`
+    :`At ${S.phase}, this skill is expected to be established, and the trainee needs to show consistent improvement in this area.`;
+  const good=(PHR[c[0]]||[[]])[0];
+  let p3=`Suggested corrections: Review the 115A standard for ${c[2]} before the next shift.`;
+  if(good.length)p3+=` On upcoming contacts, the goal is performance that would be noted as: ${good.map(lc).join('; ')}.`;
+  p3+=` I will continue to monitor this area and provide feedback on the next shift.`;
+  return{title:'LEAST ACCEPTABLE',body:[p1,p2,p3].join('\n\n')}}
+
+function asSentence(t){t=String(t||'').trim();const w=(t.split(/\s+/)[0]||'').toLowerCase();
+  if(/^(the|trainee|he|she|they|i|during|on|at|while|after|before)$/.test(w))return sent(t);
+  if(/ed$/.test(w)||/^(did|was|made|wrote|took|kept|gave|forgot|ran|drove|got|had|showed|missed|left|stood|knew|found|sought|built|held|lost|spoke|let|put)$/.test(w))return sent('The trainee '+lc(t));
+  return sent(t)}
+function writeGeneral(){const other=S.obs.filter(o=>!o.cat||(String(o.cat)!==String(S.bestCat)&&String(o.cat)!==String(S.worstCat)));if(!other.length)return null;
+  const parts=other.map(o=>{const c=catBy(o.cat);const tag=c?` (Cat ${c[0]})`:'';
+    if(o.type==='good')return `${asSentence(o.text).replace(/\.$/,'')}${tag}. ${c?`This met the 115A standard for ${c[2]}. `:''}This is noted as a positive, and the trainee is encouraged to keep it up.`;
+    const fix=c&&PHR[c[0]]?PHR[c[0]][0][0]:'';
+    return `${asSentence(o.text).replace(/\.$/,'')}${tag}. ${fix?`Suggested correction: ${sent(fix)}`:'This is an area for the trainee to improve.'}`});
+  return{title:'GENERAL/NOTEWORTHY EVENTS',body:parts.join('\n\n')}}
+
+function writeRemedial(){if(S.remStatus==='none'&&!S.remedial.trim())return null;
+  const t=S.remedial.trim();const head=S.remStatus==='complete'?'Remedial training was completed':S.remStatus==='todo'?'Remedial training is to be performed':'Remedial training';
+  return{title:'REMEDIAL TRAINING',body:`${head}${t?': '+sent(t):'.'}`}}
+
+function generateLocal(){
+  const err=m=>{$('#inStatus').innerHTML='<span class="err">'+m+'</span>';$('#inStatus').scrollIntoView({behavior:'smooth',block:'center'})};
+  $('#inStatus').textContent='';
+  if(!S.bestCat&&!S.worstCat)return err('Pick a best or worst category first.');
+  S.out=[writeBest(),writeWorst(),writeGeneral(),writeRemedial()].filter(Boolean);save();
+  renderOut(S.out);$('#status').textContent='Tap any paragraph to edit it.';setMode('out');
+}
+function copyPrompt(){copyText(buildPrompt().prompt);toast('AI prompt copied — paste it into ChatGPT or Claude')}
+
+renderSel();renderObs();
+if(S.out){renderOut(S.out);if(S.mode==='out')setMode('out')}
+</script>
+</body>
+</html>
