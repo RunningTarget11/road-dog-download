@@ -152,7 +152,7 @@ body.out main{padding-top:22px}
   <div class="eyebrow">CHP 115A · Daily Observation Report</div>
   <h1>DOR Narrative Builder</h1>
   <p>Pick the best and worst of the day, add what else you saw, and get the write-up. Works offline, no account needed. Made by Circuit Mandate.</p>
-  <p id="ver" style="font-size:11px;opacity:.65;margin-top:6px">Version 1.3 (offline) · updated Nov 15, 2026</p>
+  <p id="ver" style="font-size:11px;opacity:.65;margin-top:6px">Version 1.4 (offline) · updated Nov 22, 2026</p>
 </header>
 <main>
 <div id="inputs">
@@ -199,6 +199,23 @@ body.out main{padding-top:22px}
     <h2>Remedial training <span style="font-weight:400;font-size:12px;color:var(--muted)">optional</span></h2>
     <div class="seg" data-seg="remStatus"><button data-val="none">None</button><button data-val="complete">Complete</button><button data-val="todo">To be performed</button></div>
     <textarea id="remedial" style="margin-top:10px;min-height:64px" placeholder="What was covered or planned"></textarea>
+  </div>
+
+  <div class="card" id="shareCard">
+    <h2>Share this app</h2>
+    <p class="hint">Send this link to other FTOs. It's free, works offline, and needs no account. Everyone's DORs stay on their own phone.</p>
+    <input id="shareLink" readonly value="https://runningtarget11.github.io/dor-builder/" onclick="this.select()" style="font-size:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
+      <button class="btn btn-primary btn-sm" onclick="shareApp()">Share</button>
+      <a class="btn btn-ghost btn-sm" id="smsShare" style="text-align:center;text-decoration:none" href="#">Text it</a>
+      <button class="btn btn-ghost btn-sm" onclick="copyText(SHARE_MSG)">Copy</button>
+    </div>
+    <p class="hint" style="margin:12px 0 4px"><b>Setup on their phone:</b></p>
+    <ul class="hint" style="margin:0;padding-left:18px;line-height:1.5">
+      <li><b>iPhone:</b> Open the link in Safari, tap Share, then <b>Add to Home Screen</b>.</li>
+      <li><b>Android:</b> Open the link in Chrome, tap ⋮, then <b>Add to Home screen</b> (or <b>Install app</b>).</li>
+      <li>It opens like a regular app and updates on its own.</li>
+    </ul>
   </div>
 
   <div class="status" id="inStatus"></div>
@@ -480,6 +497,10 @@ async function generate(){
     else err('Couldn\'t generate: '+esc(e?.message||e));
   }finally{busy=false;$('#genBtn').textContent='Generate'}
 }
+const SHARE_URL='https://runningtarget11.github.io/dor-builder/';
+const SHARE_MSG='DOR Narrative Builder: free, works offline, no login. '+SHARE_URL+'\niPhone: open in Safari > Share > Add to Home Screen. Android: open in Chrome > ⋮ > Add to Home screen.';
+async function shareApp(){if(navigator.share){try{await navigator.share({title:'DOR Narrative Builder',text:SHARE_MSG})}catch(e){}}else copyText(SHARE_MSG)}
+document.addEventListener('DOMContentLoaded',()=>{const a=document.getElementById('smsShare');if(a)a.href='sms:?&body='+encodeURIComponent(SHARE_MSG)});
 async function copyText(t){try{await navigator.clipboard.writeText(t);toast('Copied')}catch(e){toast('Copy blocked — select the text instead')}}
 function copyAll(){if(!S.out||!S.out.length){toast('Generate the write-up first');return}copyText(bodies(S.out).join('\n\n'))}
 function resetAll(){S=Object.assign({phase:S.phase,emTo:S.emTo,emCc:S.emCc,emSig:S.emSig},fresh());save();location.reload()}
