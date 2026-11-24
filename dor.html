@@ -152,7 +152,7 @@ body.out main{padding-top:22px}
   <div class="eyebrow">CHP 115A · Daily Observation Report</div>
   <h1>DOR Narrative Builder</h1>
   <p>Pick the best and worst of the day, add what else you saw, and get the write-up. Works offline, no account needed. Made by Circuit Mandate.</p>
-  <p id="ver" style="font-size:11px;opacity:.65;margin-top:6px">Version 1.4 (offline) · updated Nov 22, 2026</p>
+  <p id="ver" style="font-size:11px;opacity:.65;margin-top:6px">Version 1.5 (offline) · updated Nov 24, 2026</p>
 </header>
 <main>
 <div id="inputs">
@@ -513,7 +513,17 @@ function longDate(d){if(!d)return'';const[y,m,dd]=d.split('-').map(Number);retur
 function addrs(v){return(v||'').split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean)}
 function emailText(){return `To: ${$('#emTo').value}\n${$('#emCc').value?'CC: '+$('#emCc').value+'\n':''}Subject: ${$('#emSubj').value}\n\n${$('#emBody').value}`}
 function rline(w,lbl){const c=catBy(S[w+'Cat']);if(!c)return'';const r=S[w+'Rate']||(S[w+'Sug']?S[w+'Sug'].r:'');return `${lbl}: Cat ${c[0]}, ${c[2]}${r?` (rating ${r})`:''}\n`}
-function bodyFromOut(){const sig=(S.emSig||'').trim();const rl=rline('best','Most acceptable')+rline('worst','Least acceptable');return `Here is the Daily Observation Report narrative for ${longDate(S.date)}${S.phase?` (${S.phase})`:''}.\n\n${rl?rl+'\n':''}${bodies(S.out||[]).join('\n\n')}\n\nThank you,${sig?'\n'+sig:''}`}
+function catLine(w){const c=catBy(S[w+'Cat']);if(!c)return'';const r=S[w+'Rate']||(S[w+'Sug']?S[w+'Sug'].r:'');return `Category ${c[0]}: ${c[2]}${r?` (rating ${r})`:''}`}
+/** Each section of the write-up under its own header: positive review, negative review, then the rest. */
+function sectionHead(t){const T=String(t||'').toUpperCase();
+  if(/MOST ACCEPTABLE|BEST|POSITIVE/.test(T))return{h:'POSITIVE REVIEW \u2014 MOST ACCEPTABLE',sub:catLine('best')};
+  if(/LEAST ACCEPTABLE|WORST|NEGATIVE/.test(T))return{h:'NEGATIVE REVIEW \u2014 LEAST ACCEPTABLE',sub:catLine('worst')};
+  if(/GENERAL|NOTEWORTHY/.test(T))return{h:'GENERAL / NOTEWORTHY EVENTS',sub:''};
+  if(/REMEDIAL/.test(T))return{h:'REMEDIAL TRAINING',sub:''};
+  return{h:T||'NARRATIVE',sub:''}}
+function emailSections(){return(S.out||[]).filter(p=>(p.body||'').trim()).map(p=>{const{h,sub}=sectionHead(p.title);const bar='='.repeat(Math.max(h.length,sub.length,30));
+  return `${bar}\n${h}${sub?'\n'+sub:''}\n${bar}\n\n${p.body.trim()}`}).join('\n\n\n')}
+function bodyFromOut(){const sig=(S.emSig||'').trim();return `Here is the Daily Observation Report narrative for ${longDate(S.date)}${S.phase?` (${S.phase})`:''}.\n\n\n${emailSections()}\n\n\nThank you,${sig?'\n'+sig:''}`}
 function updMailto(){const q=[];const cc=$('#emCc').value.trim();if(cc)q.push('cc='+addrs(cc).map(encodeURI).join(','));q.push('subject='+encodeURIComponent($('#emSubj').value));q.push('body='+encodeURIComponent($('#emBody').value));$('#mailtoBtn').href='mailto:'+addrs($('#emTo').value).map(encodeURI).join(',')+'?'+q.join('&')}
 function openEmail(){if(!S.out||!S.out.length){toast('Generate the write-up first');return}
   $('#emTo').value=S.emTo||'';$('#emCc').value=S.emCc||'';$('#emSig').value=S.emSig||'';
