@@ -16,7 +16,7 @@ Crash documentation for patrol officers. Made by Circuit Mandate · circuitmanda
 then turn Auto Blocker back on. Road Dog keeps working with it on, but you'll need
 to turn it off again for each update.
 
-Current build: **26**
+Current build: **27**
 
 ## Updating
 
